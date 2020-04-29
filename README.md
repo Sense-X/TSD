@@ -30,7 +30,7 @@ Reimplemented methods and backbones are shown in the below table. It's based on 
 More backbones and experiments are underway.
 
 | Backbone           | TSD   | AP             | AP_0.5  | AP_0.75  | AP_s    | AP_m      | AP_l     | Download |
-|--------------------|:-----:|:--------------:|:-------:|:--------:|:-------:|:---------:|:--------:|
+|:--------------------:|:-----:|:--------------:|:-------:|:--------:|:-------:|:---------:|:--------:|
 | ResNet50           |       | 36.2           | 58.1    | 39.0     | 21.8    | 39.9      |46.1      |
 | ResNet50           | ✓     | 40.9           | 61.9    | 44.4     | 24.2    | 44.4      |54.0      |[model](https://drive.google.com/file/d/1G0ngN4Ro5PpcB7S__09Cz3EkAfsWWPy_/view?usp=sharing)
 | ResNet101          |       | 38.9           | 60.6    | 42.4     | 22.3    | 43.6      |50.6      |
