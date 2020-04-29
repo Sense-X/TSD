@@ -15,11 +15,14 @@ TSD is a plugin detector head which is friendly to any anchor-based two stage de
 
 ## Changelog
 
-**V1.0**: We firstly reimplement the experiments based on Faster RCNN with Resnet families.
-      The SharedFCBBoxHead is used as the sibling head.
-      The corresponding configuration can be found in (faster_rcnn_r50_fpn_TSD_1x.py, faster_rcnn_r101_fpn_TSD_1x.py, faster_rcnn_r152_fpn_TSD_1x.py)
+**V1.0**: 
+We firstly reimplement the experiments based on Faster RCNN with Resnet families.
 
-###Tips:
+The SharedFCBBoxHead is used as the sibling head.
+
+The corresponding configuration can be found in (faster_rcnn_r50_fpn_TSD_1x.py, faster_rcnn_r101_fpn_TSD_1x.py, faster_rcnn_r152_fpn_TSD_1x.py)
+
+### Tips:
 
 1. LR can be set to base_lr\*total_batch (base_lr=0.00125, 0.04 = 0.00125\*32 in our experiments.)
 2. An external epoch can be used to perform warmup. (base_lr will be incresed to LR in the first epoch)
@@ -30,13 +33,13 @@ Reimplemented methods and backbones are shown in the below table. It's based on 
 More backbones and experiments are underway.
 
 | Backbone           | TSD   | AP             | AP_0.5  | AP_0.75  | AP_s    | AP_m      | AP_l     | Download |
-|:--------------------:|:-----:|:--------------:|:-------:|:--------:|:-------:|:---------:|:--------:|
-| ResNet50           |       | 36.2           | 58.1    | 39.0     | 21.8    | 39.9      |46.1      |
-| ResNet50           | ✓     | 40.9           | 61.9    | 44.4     | 24.2    | 44.4      |54.0      |[model](https://drive.google.com/file/d/1G0ngN4Ro5PpcB7S__09Cz3EkAfsWWPy_/view?usp=sharing)
-| ResNet101          |       | 38.9           | 60.6    | 42.4     | 22.3    | 43.6      |50.6      |
-| ResNet101          | ✓     | 42.3           | 63.1    | 45.9     | 25.1    | 46.3      |56.5      |[model](https://drive.google.com/open?id=1FghatPmrWx8QPeZaOn-dODJP3nqu9Jdj)
-| ResNet152          |       |            |     |      |     |       |      |
-| ResNet152          | ✓     | 43.7           | 64.5    | 47.6     | 26.1    | 48.0      |57.5      |[model](https://drive.google.com/open?id=1OQTkZIzNZ323BBxsxwMbl6YDYAgAfvb0)
+|:--------------------:|:-----:|:--------------:|:-------:|:--------:|:-------:|:---------:|:--------:|:--------:|
+| ResNet50           |       | 36.2           | 58.1    | 39.0     | 21.8    | 39.9      |46.1      |  |
+| ResNet50           | ✓     | 40.9           | 61.9    | 44.4     | 24.2    | 44.4      |54.0      |[model](https://drive.google.com/file/d/1G0ngN4Ro5PpcB7S__09Cz3EkAfsWWPy_/view?usp=sharing) |
+| ResNet101          |       | 38.9           | 60.6    | 42.4     | 22.3    | 43.6      |50.6      |  |
+| ResNet101          | ✓     | 42.3           | 63.1    | 45.9     | 25.1    | 46.3      |56.5      |[model](https://drive.google.com/open?id=1FghatPmrWx8QPeZaOn-dODJP3nqu9Jdj) |
+| ResNet152          |       |            |     |      |     |       |      | |
+| ResNet152          | ✓     | 43.7           | 64.5    | 47.6     | 26.1    | 48.0      |57.5      |[model](https://drive.google.com/open?id=1OQTkZIzNZ323BBxsxwMbl6YDYAgAfvb0)|
 
 
 
