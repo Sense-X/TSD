@@ -2,8 +2,11 @@
 
 **News**: We reimplement the TSD algorithm based on the MMDetection [framework](https://github.com/open-mmlab/mmdetection).
 
-Paper: TSD(https://arxiv.org/abs/2003.07540)
-            1st place solutions for openimage 2019 (https://arxiv.org/abs/2003.07557)
+Paper: 
+
+  TSD (https://arxiv.org/abs/2003.07540)
+
+  1st place solutions for openimage 2019 (https://arxiv.org/abs/2003.07557)
 
 ## Introduction
 
@@ -35,13 +38,15 @@ More backbones and experiments are underway.
 | Backbone           | TSD   | AP             | AP_0.5  | AP_0.75  | AP_s    | AP_m      | AP_l     | Download |
 |:--------------------:|:-----:|:--------------:|:-------:|:--------:|:-------:|:---------:|:--------:|:--------:|
 | ResNet50           |       | 36.2           | 58.1    | 39.0     | 21.8    | 39.9      |46.1      |  |
-| ResNet50           | ✓     | 40.9           | 61.9    | 44.4     | 24.2    | 44.4      |54.0      |[model](https://drive.google.com/file/d/1G0ngN4Ro5PpcB7S__09Cz3EkAfsWWPy_/view?usp=sharing) |
+| ResNet50           | ✓     | **40.9**      | **61.9** | **44.4** |**24.2**  |**44.4**  |**54.0**   |[model](https://drive.google.com/file/d/1G0ngN4Ro5PpcB7S__09Cz3EkAfsWWPy_/view?usp=sharing) |
 | ResNet101          |       | 38.9           | 60.6    | 42.4     | 22.3    | 43.6      |50.6      |  |
-| ResNet101          | ✓     | 42.3           | 63.1    | 45.9     | 25.1    | 46.3      |56.5      |[model](https://drive.google.com/open?id=1FghatPmrWx8QPeZaOn-dODJP3nqu9Jdj) |
-| ResNet152          |       |            |     |      |     |       |      | |
-| ResNet152          | ✓     | 43.7           | 64.5    | 47.6     | 26.1    | 48.0      |57.5      |[model](https://drive.google.com/open?id=1OQTkZIzNZ323BBxsxwMbl6YDYAgAfvb0)|
+| ResNet101          | ✓     | **42.3**      | **63.1**| **45.9**  | **25.1**|**46.3**  |**56.5**    |[model](https://drive.google.com/open?id=1FghatPmrWx8QPeZaOn-dODJP3nqu9Jdj) |
+| ResNet152          |       |  40.5        |62.1      |44.5     | 24.6     |45.0       | 51.8      | |
+| ResNet152          | ✓     | **43.7**     |**64.5**  |**47.6** |**26.1**  |**48.0**   |**57.5**   |[model](https://drive.google.com/open?id=1OQTkZIzNZ323BBxsxwMbl6YDYAgAfvb0)|
 
+### TBD
 
+**We will continue to update the pretrained models of some heavy backbones.**
 
 ## Installation
 
