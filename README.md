@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # TSD
 
 **News**: We reimplement the TSD algorithm based on the MMDetection [framework](https://github.com/open-mmlab/mmdetection).
