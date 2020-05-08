@@ -7,7 +7,7 @@
 
 Paper:
 
-  TSD (https://arxiv.org/abs/2003.07540)
+  Revisiting the Sibling Head in Object Detector (CVPR 2020) (https://arxiv.org/abs/2003.07540)
 
   1st place solutions for openimage 2019 (https://arxiv.org/abs/2003.07557)
 
@@ -65,9 +65,6 @@ Please refer to [MMdetection](docs/INSTALL.md) for installation and dataset prep
 ./tools/slurm_train.sh dev TSD configs/faster_rcnn_r152_fpn_TSD_1x.py exp/TSD_r152/ 16
 ```
 
-## Acknowledgement
-
-We sinerely appreciate the support of MMDetection for object detection algorithms.
 
 ## Citations
 
@@ -77,7 +74,7 @@ If the TSD helps your research, please cite the follow papers.
 @article{song2020revisiting,
   title={Revisiting the Sibling Head in Object Detector},
   author={Song, Guanglu and Liu, Yu and Wang, Xiaogang},
-  journal={arXiv preprint arXiv:2003.07540},
+  journal={CVPR},
   year={2020}
 }
 @article{liu20201st,
