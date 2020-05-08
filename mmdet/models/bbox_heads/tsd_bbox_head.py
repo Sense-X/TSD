@@ -223,6 +223,7 @@ class TSDConvFCBBoxHead(BBoxHead):
         target_lvls = target_lvls.clamp(min=0, max=num_levels - 1).long()
         return target_lvls
 
+    @force_fp32(apply_to=('feats'))
     def forward(self, x, feats, rois):
         # generate TSD pc pr and corresponding features
         c = x.numel() // x.shape[0]
@@ -232,9 +233,9 @@ class TSDConvFCBBoxHead(BBoxHead):
         delta_r = self.delta_r(x2)
         num_levels = len(feats)
         target_lvls = self.map_roi_levels(rois, num_levels)
-        TSD_cls_feats = feats[0].new_zeros(
+        TSD_cls_feats = x.new_zeros(
             rois.size(0), self.in_channels, self.pool_size, self.pool_size)
-        TSD_loc_feats = feats[0].new_zeros(
+        TSD_loc_feats = x.new_zeros(
             rois.size(0), self.in_channels, self.pool_size, self.pool_size)
         for i in range(num_levels):
             inds = target_lvls == i
@@ -242,10 +243,10 @@ class TSDConvFCBBoxHead(BBoxHead):
                 delta_c_ = delta_c[inds, :]
                 delta_r_ = delta_r[inds, :]
                 rois_ = rois[inds, :]
-                tsd_feats_cls = self.align_pooling_pc[i](feats[i], rois_, delta_c_)
-                tsd_feats_loc = self.align_pooling_pr[i](feats[i], rois_, delta_r_)
-                TSD_cls_feats[inds] = tsd_feats_cls
-                TSD_loc_feats[inds] = tsd_feats_loc
+                tsd_feats_cls = self.align_pooling_pc[i](feats[i], rois_, delta_c_.to(dtype=rois_.dtype))
+                tsd_feats_loc = self.align_pooling_pr[i](feats[i], rois_, delta_r_.to(dtype=rois_.dtype))
+                TSD_cls_feats[inds] = tsd_feats_cls.to(dtype=x.dtype)
+                TSD_loc_feats[inds] = tsd_feats_loc.to(dtype=x.dtype)
 
         # shared part for TSD
         if self.num_shared_convs > 0:
@@ -332,6 +333,7 @@ class TSDConvFCBBoxHead(BBoxHead):
         else:
             return None, None, TSD_cls_score, TSD_bbox_pred, delta_c, delta_r
 
+    @force_fp32(apply_to=('delta_c', 'delta_r', 'TSD_cls_score', 'TSD_bbox_pred', 'cls_score', 'bbox_pred'))
     def get_target(self, rois, sampling_results, gt_bboxes, gt_labels, delta_c, delta_r, cls_score, bbox_pred, TSD_cls_score, TSD_bbox_pred,
                    rcnn_train_cfg, img_metas):
         pos_proposals = [res.pos_bboxes for res in sampling_results]
@@ -368,7 +370,7 @@ class TSDConvFCBBoxHead(BBoxHead):
             target_stds=self.target_stds)
         return cls_reg_targets
 
-    @force_fp32(apply_to=('cls_score', 'bbox_pred'))
+    @force_fp32(apply_to=('cls_score', 'bbox_pred', 'TSD_cls_score', 'TSD_bbox_pred', 'pc_cls_loss', 'pc_loc_loss'))
     def loss(self,
              cls_score,
              bbox_pred,

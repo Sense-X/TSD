@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from mmdet.core import bbox2result, bbox2roi, build_assigner, build_sampler
+from mmdet.core import bbox2result, bbox2roi, build_assigner, build_sampler, bbox2roi, bbox_mapping, merge_aug_bboxes, multiclass_nms
 from .. import builder
 from ..registry import DETECTORS
 from .base import BaseDetector
@@ -326,6 +326,7 @@ class TwoStageDetector(BaseDetector, RPNTestMixin, BBoxTestMixin,
         scale = 0.1
         rois_r = rois.new_zeros(rois.shape[0],rois.shape[1])
         rois_r[:,0] = rois[:,0]
+        delta_r = delta_r.to(dtype=rois_r.dtype)
         rois_r[:,1] = rois[:,1]+delta_r[:,0]*scale*w
         rois_r[:,2] = rois[:,2]+delta_r[:,1]*scale*h
         rois_r[:,3] = rois[:,3]+delta_r[:,0]*scale*w
@@ -367,6 +368,54 @@ class TwoStageDetector(BaseDetector, RPNTestMixin, BBoxTestMixin,
             segm_results = self.simple_test_mask(
                 x, img_metas, det_bboxes, det_labels, rescale=rescale)
             return bbox_results, segm_results
+    #support for TSD mstest
+    def tsd_aug_test_bboxes(self, feats, img_metas, proposal_list, rcnn_test_cfg):
+        aug_bboxes = []
+        aug_scores = []
+        for x, img_meta in zip(feats, img_metas):
+            # only one image in the batch
+            img_shape = img_meta[0]['img_shape']
+            scale_factor = img_meta[0]['scale_factor']
+            flip = img_meta[0]['flip']
+            # TODO more flexible
+            proposals = bbox_mapping(proposal_list[0][:, :4], img_shape,
+                                     scale_factor, flip)
+            rois = bbox2roi([proposals])
+            # recompute feature maps to save GPU memory
+            roi_feats = self.bbox_roi_extractor(
+                x[:len(self.bbox_roi_extractor.featmap_strides)], rois)
+            cls_score, bbox_pred, TSD_cls_score, TSD_bbox_pred, delta_c, delta_r = self.bbox_head(roi_feats, x[:self.bbox_roi_extractor.num_inputs], rois)
+
+            w = rois[:,3]-rois[:,1]+1
+            h = rois[:,4]-rois[:,2]+1
+            scale = 0.1
+            rois_r = rois.new_zeros(rois.shape[0],rois.shape[1])
+            rois_r[:,0] = rois[:,0]
+            delta_r = delta_r.to(dtype=rois_r.dtype)
+            rois_r[:,1] = rois[:,1]+delta_r[:,0]*scale*w
+            rois_r[:,2] = rois[:,2]+delta_r[:,1]*scale*h
+            rois_r[:,3] = rois[:,3]+delta_r[:,0]*scale*w
+            rois_r[:,4] = rois[:,4]+delta_r[:,1]*scale*h
+
+            bboxes, scores = self.bbox_head.get_det_bboxes(
+                rois_r,
+                TSD_cls_score,
+                TSD_bbox_pred,
+                img_shape,
+                scale_factor,
+                rescale=False,
+                cfg=None)
+
+            aug_bboxes.append(bboxes)
+            aug_scores.append(scores)
+        # after merging, bboxes will be rescaled to the original image size
+        merged_bboxes, merged_scores = merge_aug_bboxes(
+            aug_bboxes, aug_scores, img_metas, rcnn_test_cfg)
+        det_bboxes, det_labels = multiclass_nms(merged_bboxes, merged_scores,
+                                                rcnn_test_cfg.score_thr,
+                                                rcnn_test_cfg.nms,
+                                                rcnn_test_cfg.max_per_img)
+        return det_bboxes, det_labels
 
     def aug_test(self, imgs, img_metas, rescale=False):
         """Test with augmentations.
@@ -377,9 +426,15 @@ class TwoStageDetector(BaseDetector, RPNTestMixin, BBoxTestMixin,
         # recompute feats to save memory
         proposal_list = self.aug_test_rpn(
             self.extract_feats(imgs), img_metas, self.test_cfg.rpn)
-        det_bboxes, det_labels = self.aug_test_bboxes(
-            self.extract_feats(imgs), img_metas, proposal_list,
-            self.test_cfg.rcnn)
+
+        if self.use_TSD:
+            det_bboxes, det_labels = self.tsd_aug_test_bboxes(
+                self.extract_feats(imgs), img_metas, proposal_list,
+                self.test_cfg.rcnn)
+        else:
+            det_bboxes, det_labels = self.aug_test_bboxes(
+                self.extract_feats(imgs), img_metas, proposal_list,
+                self.test_cfg.rcnn)
 
         if rescale:
             _det_bboxes = det_bboxes

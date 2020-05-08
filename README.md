@@ -1,8 +1,11 @@
 # TSD
 
-**News**: We reimplement the TSD algorithm based on the MMDetection [framework](https://github.com/open-mmlab/mmdetection).
+**News**:
+2020.5.8: We add supports for fp16 training with TSD and update the performance on X101_64x4d backbone.
 
-Paper: 
+2020.4.29: We reimplement the TSD algorithm based on the MMDetection [framework](https://github.com/open-mmlab/mmdetection).
+
+Paper:
 
   TSD (https://arxiv.org/abs/2003.07540)
 
@@ -18,7 +21,7 @@ TSD is a plugin detector head which is friendly to any anchor-based two stage de
 
 ## Changelog
 
-**V1.0**: 
+**V1.0**:
 We firstly reimplement the experiments based on Faster RCNN with Resnet families.
 
 The SharedFCBBoxHead is used as the sibling head.
@@ -47,6 +50,10 @@ More backbones and experiments are underway.
 ### TBD
 
 **We will continue to update the pretrained models of some heavy backbones.**
+We train the ResNext101-64x4d model with DCN and multi-scale training. Evaluation is performed on COCO minival with multi-scale test.
+| Backbone           | TSD   |AP             | AP_0.5  | AP_0.75  | AP_s    | AP_m      | AP_l     | Download |
+|:------------------:|:-----:|:-------------:|:-------:|:--------:|:--------:|:---------:|:--------:|:--------:|
+| X-101-64x4d-FPN      | ✓   | 49.2           | 70.1    | 53.8     | 33.2    | 53.1      |63.7      | [model](https://drive.google.com/open?id=1tMf_7Aix2Tx0itVZtnPF-FbqfX2RM4zL)   |
 
 ## Installation
 
