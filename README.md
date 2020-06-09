@@ -1,6 +1,8 @@
 # TSD
 
 **News**:
+2020.6.9: We add supports for Mask RCNN and Cascade RCNN. The pretrained models are also released via GoogleDrive.
+
 2020.5.8: We add supports for fp16 training with TSD and update the performance on X101_64x4d backbone.
 
 2020.4.29: We reimplement the TSD algorithm based on the MMDetection [framework](https://github.com/open-mmlab/mmdetection).
@@ -37,6 +39,9 @@ The corresponding configuration can be found in (faster_rcnn_r50_fpn_TSD_1x.py, 
 
 Reimplemented methods and backbones are shown in the below table. It's based on the Faster RCNN with FPN.
 More backbones and experiments are underway.
+(If you want to obtain the pretrained models via other manners, please send me e-mail).
+
+### For standard Faster RCNN
 
 | Backbone           | TSD   | AP             | AP_0.5  | AP_0.75  | AP_s    | AP_m      | AP_l     | Download |
 |:--------------------:|:-----:|:--------------:|:-------:|:--------:|:-------:|:---------:|:--------:|:--------:|
@@ -47,13 +52,29 @@ More backbones and experiments are underway.
 | ResNet152          |       |  40.5        |62.1      |44.5     | 24.6     |45.0       | 51.8      | |
 | ResNet152          | ✓     | **43.7**     |**64.5**  |**47.6** |**26.1**  |**48.0**   |**57.5**   |[model](https://drive.google.com/open?id=1OQTkZIzNZ323BBxsxwMbl6YDYAgAfvb0)|
 
+### For Mask RCNN
+
+| Backbone           | TSD   | AP             | AP_0.5  | AP_0.75  | AP_s    | AP_m      | AP_l     | MaskAP | Download |
+|:------------------:|:-----:|:--------------:|:-------:|:--------:|:-------:|:---------:|:--------:|:--------:|:--------:|
+| ResNet50           | ✓     | 41.2           | 61.9    | 44.7     | 24.3    | 44.8      | 54.8      |  35.8   |  [model](https://drive.google.com/file/d/17iFSOinWyTtWRF4wc6B-zNext4DuZLDt/view?usp=sharing)    |
+
+### For Cascade RCNN
+
+| Backbone           | TSD   | AP             | AP_0.5  | AP_0.75  | AP_s    | AP_m      | AP_l     | Download |
+|:------------------:|:-----:|:--------------:|:-------:|:--------:|:-------:|:---------:|:--------:|:--------:|
+| ResNet50           |       | -             | -        |  -       | -       | -         | -        |          |
+| ResNet50           | ✓     | **42.0**      | **59.9** | **45.4** |**24.3**  |**45.5**  |**57.1**   |[model](https://drive.google.com/file/d/1bJulo-_NAhBOLTDvEuIlSsDSwh6sQghX/view?usp=sharing) |
+| ResNet101          |       | 41.8          | 60.0     |  45.5    | 24.4    |45.8       |55.1       |          |
+| ResNet101          | ✓     | **42.9**      | **60.8** | **46.4** |**24.8**  |**46.5**  |**57.7**   |[model](https://drive.google.com/file/d/1RVomu6temvNNg0DIE85Pg-CcUf3GIg8n/view?usp=sharing) |
+| ResNet101_mstest   | ✓     | **45.0**      | **63.6** | **49.2** |**28.7**  |**49.1**  |**57.8**   |        |
+
 ### TBD
 
 **We will continue to update the pretrained models of some heavy backbones.**
 We train the ResNext101-64x4d model with DCN and multi-scale training. Evaluation is performed on COCO minival with multi-scale test.
 | Backbone           | TSD   |AP             | AP_0.5  | AP_0.75  | AP_s    | AP_m      | AP_l     | Download |
 |:------------------:|:-----:|:-------------:|:-------:|:--------:|:--------:|:---------:|:--------:|:--------:|
-| X-101-64x4d-FPN      | ✓   | 49.2           | 70.1    | 53.8     | 33.2    | 53.1      |63.7      | [model](https://drive.google.com/open?id=1tMf_7Aix2Tx0itVZtnPF-FbqfX2RM4zL)   |
+| X-101-64x4d-FPN      | ✓   | 49.2           | 70.1    | 53.8     | 33.2    | 53.1      |63.7      | [model](https://drive.google.com/open?id=1tMf_7Aix2Tx0itVZtnPF-FbqfX2RM4zL) |
 
 ## Installation
 

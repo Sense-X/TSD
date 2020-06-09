@@ -182,7 +182,8 @@ def bbox_target_single_tsd(pos_bboxes,
     rois_r[:,4] = rois[:,4]+delta_r[:,1]*scale*h
     TSD_pos_rois = rois_r[:num_pos]
     pos_rois = rois[:num_pos]
-
+    pc_cls_loss = rois.new_zeros(1)
+    pc_loc_loss = rois.new_zeros(1)
     if num_pos > 0:
         labels[:num_pos] = pos_gt_labels
         TSD_labels[:num_pos] = pos_gt_labels
@@ -210,6 +211,7 @@ def bbox_target_single_tsd(pos_bboxes,
         N = bbox_pred_.shape[0]
         bbox_pred_ = bbox_pred_.view(N,-1,4)
         TSD_bbox_pred_ = TSD_bbox_pred_.view(N,-1,4)
+
         sibling_head_bboxes = delta2bbox(pos_bboxes, bbox_pred_[np.arange(num_pos), labels[:num_pos]], means=target_means, stds=target_stds)
         TSD_head_bboxes = delta2bbox(TSD_pos_rois[:,1:], TSD_bbox_pred_[np.arange(num_pos), TSD_labels[:num_pos]], means=target_means, stds=target_stds)
 
@@ -218,7 +220,7 @@ def bbox_target_single_tsd(pos_bboxes,
         loc_pc_margin = torch.tensor(loc_pc_margin).to(ious.device).to(dtype=ious.dtype)
         loc_pc_margin = torch.min(1-ious.detach(),loc_pc_margin).detach()
         pc_loc_loss = F.relu(-(TSD_ious - ious.detach() - loc_pc_margin))
-        
+
     if num_neg > 0:
         label_weights[-num_neg:] = 1.
         TSD_label_weights[-num_neg:] = 1.
