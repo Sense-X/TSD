@@ -76,20 +76,21 @@ class NiceRepr(object):
     """
 
     def __nice__(self):
-        if hasattr(self, '__len__'):
+        if hasattr(self, "__len__"):
             # It is a common pattern for objects to use __len__ in __nice__
             # As a convenience we define a default __nice__ for these objects
             return str(len(self))
         else:
             # In all other cases force the subclass to overload __nice__
             raise NotImplementedError(
-                'Define the __nice__ method for {!r}'.format(self.__class__))
+                "Define the __nice__ method for {!r}".format(self.__class__)
+            )
 
     def __repr__(self):
         try:
             nice = self.__nice__()
             classname = self.__class__.__name__
-            return '<{0}({1}) at {2}>'.format(classname, nice, hex(id(self)))
+            return "<{0}({1}) at {2}>".format(classname, nice, hex(id(self)))
         except NotImplementedError as ex:
             warnings.warn(str(ex), category=RuntimeWarning)
             return object.__repr__(self)
@@ -98,7 +99,7 @@ class NiceRepr(object):
         try:
             classname = self.__class__.__name__
             nice = self.__nice__()
-            return '<{0}({1})>'.format(classname, nice)
+            return "<{0}({1})>".format(classname, nice)
         except NotImplementedError as ex:
             warnings.warn(str(ex), category=RuntimeWarning)
             return object.__repr__(self)

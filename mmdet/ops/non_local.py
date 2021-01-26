@@ -21,36 +21,42 @@ class NonLocal2D(nn.Module):
         mode (str): Options are `embedded_gaussian` and `dot_product`.
     """
 
-    def __init__(self,
-                 in_channels,
-                 reduction=2,
-                 use_scale=True,
-                 conv_cfg=None,
-                 norm_cfg=None,
-                 mode='embedded_gaussian'):
+    def __init__(
+        self,
+        in_channels,
+        reduction=2,
+        use_scale=True,
+        conv_cfg=None,
+        norm_cfg=None,
+        mode="embedded_gaussian",
+    ):
         super(NonLocal2D, self).__init__()
         self.in_channels = in_channels
         self.reduction = reduction
         self.use_scale = use_scale
         self.inter_channels = in_channels // reduction
         self.mode = mode
-        assert mode in ['embedded_gaussian', 'dot_product']
+        assert mode in ["embedded_gaussian", "dot_product"]
 
         # g, theta, phi are actually `nn.Conv2d`. Here we use ConvModule for
         # potential usage.
         self.g = ConvModule(
-            self.in_channels, self.inter_channels, kernel_size=1, act_cfg=None)
+            self.in_channels, self.inter_channels, kernel_size=1, act_cfg=None
+        )
         self.theta = ConvModule(
-            self.in_channels, self.inter_channels, kernel_size=1, act_cfg=None)
+            self.in_channels, self.inter_channels, kernel_size=1, act_cfg=None
+        )
         self.phi = ConvModule(
-            self.in_channels, self.inter_channels, kernel_size=1, act_cfg=None)
+            self.in_channels, self.inter_channels, kernel_size=1, act_cfg=None
+        )
         self.conv_out = ConvModule(
             self.inter_channels,
             self.in_channels,
             kernel_size=1,
             conv_cfg=conv_cfg,
             norm_cfg=norm_cfg,
-            act_cfg=None)
+            act_cfg=None,
+        )
 
         self.init_weights()
 
@@ -67,7 +73,7 @@ class NonLocal2D(nn.Module):
         pairwise_weight = torch.matmul(theta_x, phi_x)
         if self.use_scale:
             # theta_x.shape[-1] is `self.inter_channels`
-            pairwise_weight /= theta_x.shape[-1]**0.5
+            pairwise_weight /= theta_x.shape[-1] ** 0.5
         pairwise_weight = pairwise_weight.softmax(dim=-1)
         return pairwise_weight
 

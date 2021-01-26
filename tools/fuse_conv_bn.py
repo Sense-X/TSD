@@ -14,12 +14,10 @@ def fuse_conv_bn(conv, bn):
     simplify network structures.
     """
     conv_w = conv.weight
-    conv_b = conv.bias if conv.bias is not None else torch.zeros_like(
-        bn.running_mean)
+    conv_b = conv.bias if conv.bias is not None else torch.zeros_like(bn.running_mean)
 
     factor = bn.weight / torch.sqrt(bn.running_var + bn.eps)
-    conv.weight = nn.Parameter(conv_w *
-                               factor.reshape([conv.out_channels, 1, 1, 1]))
+    conv.weight = nn.Parameter(conv_w * factor.reshape([conv.out_channels, 1, 1, 1]))
     conv.bias = nn.Parameter((conv_b - bn.running_mean) * factor + bn.bias)
     return conv
 
@@ -46,11 +44,10 @@ def fuse_module(m):
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(
-        description='fuse Conv and BN layers in a model')
-    parser.add_argument('config', help='config file path')
-    parser.add_argument('checkpoint', help='checkpoint file path')
-    parser.add_argument('out', help='output path of the converted model')
+    parser = argparse.ArgumentParser(description="fuse Conv and BN layers in a model")
+    parser.add_argument("config", help="config file path")
+    parser.add_argument("checkpoint", help="checkpoint file path")
+    parser.add_argument("out", help="output path of the converted model")
     args = parser.parse_args()
     return args
 
@@ -64,5 +61,5 @@ def main():
     save_checkpoint(fused_model, args.out)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

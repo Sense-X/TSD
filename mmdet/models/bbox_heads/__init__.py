@@ -4,5 +4,9 @@ from .double_bbox_head import DoubleConvFCBBoxHead
 from .tsd_bbox_head import TSDSharedFCBBoxHead
 
 __all__ = [
-    'BBoxHead', 'ConvFCBBoxHead', 'SharedFCBBoxHead', 'DoubleConvFCBBoxHead', 'TSDSharedFCBBoxHead'
+    "BBoxHead",
+    "ConvFCBBoxHead",
+    "SharedFCBBoxHead",
+    "DoubleConvFCBBoxHead",
+    "TSDSharedFCBBoxHead",
 ]

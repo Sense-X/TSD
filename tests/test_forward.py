@@ -16,10 +16,11 @@ def _get_config_directory():
     except NameError:
         # For IPython development when this __file__ is not defined
         import mmdet
+
         repo_dpath = dirname(dirname(mmdet.__file__))
-    config_dpath = join(repo_dpath, 'configs')
+    config_dpath = join(repo_dpath, "configs")
     if not exists(config_dpath):
-        raise Exception('Cannot find config path')
+        raise Exception("Cannot find config path")
     return config_dpath
 
 
@@ -28,6 +29,7 @@ def _get_config_module(fname):
     Load a configuration as a python module
     """
     from xdoctest.utils import import_module_from_path
+
     config_dpath = _get_config_directory()
     config_fpath = join(config_dpath, fname)
     config_mod = import_module_from_path(config_fpath)
@@ -40,6 +42,7 @@ def _get_detector_cfg(fname):
     for safe modification of parameters without influencing other tests.
     """
     import mmcv
+
     config = _get_config_module(fname)
     model = copy.deepcopy(config.model)
     train_cfg = mmcv.Config(copy.deepcopy(config.train_cfg))
@@ -48,27 +51,25 @@ def _get_detector_cfg(fname):
 
 
 def test_ssd300_forward():
-    model, train_cfg, test_cfg = _get_detector_cfg('ssd300_coco.py')
-    model['pretrained'] = None
+    model, train_cfg, test_cfg = _get_detector_cfg("ssd300_coco.py")
+    model["pretrained"] = None
 
     from mmdet.models import build_detector
+
     detector = build_detector(model, train_cfg=train_cfg, test_cfg=test_cfg)
 
     input_shape = (1, 3, 300, 300)
     mm_inputs = _demo_mm_inputs(input_shape)
 
-    imgs = mm_inputs.pop('imgs')
-    img_metas = mm_inputs.pop('img_metas')
+    imgs = mm_inputs.pop("imgs")
+    img_metas = mm_inputs.pop("img_metas")
 
     # Test forward train
-    gt_bboxes = mm_inputs['gt_bboxes']
-    gt_labels = mm_inputs['gt_labels']
+    gt_bboxes = mm_inputs["gt_bboxes"]
+    gt_labels = mm_inputs["gt_labels"]
     losses = detector.forward(
-        imgs,
-        img_metas,
-        gt_bboxes=gt_bboxes,
-        gt_labels=gt_labels,
-        return_loss=True)
+        imgs, img_metas, gt_bboxes=gt_bboxes, gt_labels=gt_labels, return_loss=True
+    )
     assert isinstance(losses, dict)
 
     # Test forward test
@@ -76,28 +77,27 @@ def test_ssd300_forward():
         img_list = [g[None, :] for g in imgs]
         batch_results = []
         for one_img, one_meta in zip(img_list, img_metas):
-            result = detector.forward([one_img], [[one_meta]],
-                                      return_loss=False)
+            result = detector.forward([one_img], [[one_meta]], return_loss=False)
             batch_results.append(result)
 
 
 def test_rpn_forward():
-    model, train_cfg, test_cfg = _get_detector_cfg('rpn_r50_fpn_1x.py')
-    model['pretrained'] = None
+    model, train_cfg, test_cfg = _get_detector_cfg("rpn_r50_fpn_1x.py")
+    model["pretrained"] = None
 
     from mmdet.models import build_detector
+
     detector = build_detector(model, train_cfg=train_cfg, test_cfg=test_cfg)
 
     input_shape = (1, 3, 224, 224)
     mm_inputs = _demo_mm_inputs(input_shape)
 
-    imgs = mm_inputs.pop('imgs')
-    img_metas = mm_inputs.pop('img_metas')
+    imgs = mm_inputs.pop("imgs")
+    img_metas = mm_inputs.pop("img_metas")
 
     # Test forward train
-    gt_bboxes = mm_inputs['gt_bboxes']
-    losses = detector.forward(
-        imgs, img_metas, gt_bboxes=gt_bboxes, return_loss=True)
+    gt_bboxes = mm_inputs["gt_bboxes"]
+    losses = detector.forward(imgs, img_metas, gt_bboxes=gt_bboxes, return_loss=True)
     assert isinstance(losses, dict)
 
     # Test forward test
@@ -105,34 +105,30 @@ def test_rpn_forward():
         img_list = [g[None, :] for g in imgs]
         batch_results = []
         for one_img, one_meta in zip(img_list, img_metas):
-            result = detector.forward([one_img], [[one_meta]],
-                                      return_loss=False)
+            result = detector.forward([one_img], [[one_meta]], return_loss=False)
             batch_results.append(result)
 
 
 def test_retina_ghm_forward():
-    model, train_cfg, test_cfg = _get_detector_cfg(
-        'ghm/retinanet_ghm_r50_fpn_1x.py')
-    model['pretrained'] = None
+    model, train_cfg, test_cfg = _get_detector_cfg("ghm/retinanet_ghm_r50_fpn_1x.py")
+    model["pretrained"] = None
 
     from mmdet.models import build_detector
+
     detector = build_detector(model, train_cfg=train_cfg, test_cfg=test_cfg)
 
     input_shape = (3, 3, 224, 224)
     mm_inputs = _demo_mm_inputs(input_shape)
 
-    imgs = mm_inputs.pop('imgs')
-    img_metas = mm_inputs.pop('img_metas')
+    imgs = mm_inputs.pop("imgs")
+    img_metas = mm_inputs.pop("img_metas")
 
     # Test forward train
-    gt_bboxes = mm_inputs['gt_bboxes']
-    gt_labels = mm_inputs['gt_labels']
+    gt_bboxes = mm_inputs["gt_bboxes"]
+    gt_labels = mm_inputs["gt_labels"]
     losses = detector.forward(
-        imgs,
-        img_metas,
-        gt_bboxes=gt_bboxes,
-        gt_labels=gt_labels,
-        return_loss=True)
+        imgs, img_metas, gt_bboxes=gt_bboxes, gt_labels=gt_labels, return_loss=True
+    )
     assert isinstance(losses, dict)
 
     # Test forward test
@@ -140,22 +136,18 @@ def test_retina_ghm_forward():
         img_list = [g[None, :] for g in imgs]
         batch_results = []
         for one_img, one_meta in zip(img_list, img_metas):
-            result = detector.forward([one_img], [[one_meta]],
-                                      return_loss=False)
+            result = detector.forward([one_img], [[one_meta]], return_loss=False)
             batch_results.append(result)
 
     if torch.cuda.is_available():
         detector = detector.cuda()
         imgs = imgs.cuda()
         # Test forward train
-        gt_bboxes = [b.cuda() for b in mm_inputs['gt_bboxes']]
-        gt_labels = [g.cuda() for g in mm_inputs['gt_labels']]
+        gt_bboxes = [b.cuda() for b in mm_inputs["gt_bboxes"]]
+        gt_labels = [g.cuda() for g in mm_inputs["gt_labels"]]
         losses = detector.forward(
-            imgs,
-            img_metas,
-            gt_bboxes=gt_bboxes,
-            gt_labels=gt_labels,
-            return_loss=True)
+            imgs, img_metas, gt_bboxes=gt_bboxes, gt_labels=gt_labels, return_loss=True
+        )
         assert isinstance(losses, dict)
 
         # Test forward test
@@ -163,8 +155,7 @@ def test_retina_ghm_forward():
             img_list = [g[None, :] for g in imgs]
             batch_results = []
             for one_img, one_meta in zip(img_list, img_metas):
-                result = detector.forward([one_img], [[one_meta]],
-                                          return_loss=False)
+                result = detector.forward([one_img], [[one_meta]], return_loss=False)
                 batch_results.append(result)
 
 
@@ -173,50 +164,47 @@ def test_cascade_forward():
         from torchvision import _C as C  # NOQA
     except ImportError:
         import pytest
-        raise pytest.skip('requires torchvision on cpu')
 
-    model, train_cfg, test_cfg = _get_detector_cfg(
-        'cascade_rcnn_r50_fpn_1x.py')
-    model['pretrained'] = None
+        raise pytest.skip("requires torchvision on cpu")
+
+    model, train_cfg, test_cfg = _get_detector_cfg("cascade_rcnn_r50_fpn_1x.py")
+    model["pretrained"] = None
     # torchvision roi align supports CPU
-    model['bbox_roi_extractor']['roi_layer']['use_torchvision'] = True
+    model["bbox_roi_extractor"]["roi_layer"]["use_torchvision"] = True
 
     from mmdet.models import build_detector
+
     detector = build_detector(model, train_cfg=train_cfg, test_cfg=test_cfg)
 
     input_shape = (1, 3, 256, 256)
 
     # Test forward train with a non-empty truth batch
     mm_inputs = _demo_mm_inputs(input_shape, num_items=[10])
-    imgs = mm_inputs.pop('imgs')
-    img_metas = mm_inputs.pop('img_metas')
-    gt_bboxes = mm_inputs['gt_bboxes']
-    gt_labels = mm_inputs['gt_labels']
+    imgs = mm_inputs.pop("imgs")
+    img_metas = mm_inputs.pop("img_metas")
+    gt_bboxes = mm_inputs["gt_bboxes"]
+    gt_labels = mm_inputs["gt_labels"]
     losses = detector.forward(
-        imgs,
-        img_metas,
-        gt_bboxes=gt_bboxes,
-        gt_labels=gt_labels,
-        return_loss=True)
+        imgs, img_metas, gt_bboxes=gt_bboxes, gt_labels=gt_labels, return_loss=True
+    )
     assert isinstance(losses, dict)
     from mmdet.apis.train import parse_losses
+
     total_loss = float(parse_losses(losses)[0].item())
     assert total_loss > 0
 
     # Test forward train with an empty truth batch
     mm_inputs = _demo_mm_inputs(input_shape, num_items=[0])
-    imgs = mm_inputs.pop('imgs')
-    img_metas = mm_inputs.pop('img_metas')
-    gt_bboxes = mm_inputs['gt_bboxes']
-    gt_labels = mm_inputs['gt_labels']
+    imgs = mm_inputs.pop("imgs")
+    img_metas = mm_inputs.pop("img_metas")
+    gt_bboxes = mm_inputs["gt_bboxes"]
+    gt_labels = mm_inputs["gt_labels"]
     losses = detector.forward(
-        imgs,
-        img_metas,
-        gt_bboxes=gt_bboxes,
-        gt_labels=gt_labels,
-        return_loss=True)
+        imgs, img_metas, gt_bboxes=gt_bboxes, gt_labels=gt_labels, return_loss=True
+    )
     assert isinstance(losses, dict)
     from mmdet.apis.train import parse_losses
+
     total_loss = float(parse_losses(losses)[0].item())
     assert total_loss > 0
 
@@ -226,49 +214,47 @@ def test_faster_rcnn_forward():
         from torchvision import _C as C  # NOQA
     except ImportError:
         import pytest
-        raise pytest.skip('requires torchvision on cpu')
 
-    model, train_cfg, test_cfg = _get_detector_cfg('faster_rcnn_r50_fpn_1x.py')
-    model['pretrained'] = None
+        raise pytest.skip("requires torchvision on cpu")
+
+    model, train_cfg, test_cfg = _get_detector_cfg("faster_rcnn_r50_fpn_1x.py")
+    model["pretrained"] = None
     # torchvision roi align supports CPU
-    model['bbox_roi_extractor']['roi_layer']['use_torchvision'] = True
+    model["bbox_roi_extractor"]["roi_layer"]["use_torchvision"] = True
 
     from mmdet.models import build_detector
+
     detector = build_detector(model, train_cfg=train_cfg, test_cfg=test_cfg)
 
     input_shape = (1, 3, 256, 256)
 
     # Test forward train with a non-empty truth batch
     mm_inputs = _demo_mm_inputs(input_shape, num_items=[10])
-    imgs = mm_inputs.pop('imgs')
-    img_metas = mm_inputs.pop('img_metas')
-    gt_bboxes = mm_inputs['gt_bboxes']
-    gt_labels = mm_inputs['gt_labels']
+    imgs = mm_inputs.pop("imgs")
+    img_metas = mm_inputs.pop("img_metas")
+    gt_bboxes = mm_inputs["gt_bboxes"]
+    gt_labels = mm_inputs["gt_labels"]
     losses = detector.forward(
-        imgs,
-        img_metas,
-        gt_bboxes=gt_bboxes,
-        gt_labels=gt_labels,
-        return_loss=True)
+        imgs, img_metas, gt_bboxes=gt_bboxes, gt_labels=gt_labels, return_loss=True
+    )
     assert isinstance(losses, dict)
     from mmdet.apis.train import parse_losses
+
     total_loss = float(parse_losses(losses)[0].item())
     assert total_loss > 0
 
     # Test forward train with an empty truth batch
     mm_inputs = _demo_mm_inputs(input_shape, num_items=[0])
-    imgs = mm_inputs.pop('imgs')
-    img_metas = mm_inputs.pop('img_metas')
-    gt_bboxes = mm_inputs['gt_bboxes']
-    gt_labels = mm_inputs['gt_labels']
+    imgs = mm_inputs.pop("imgs")
+    img_metas = mm_inputs.pop("img_metas")
+    gt_bboxes = mm_inputs["gt_bboxes"]
+    gt_labels = mm_inputs["gt_labels"]
     losses = detector.forward(
-        imgs,
-        img_metas,
-        gt_bboxes=gt_bboxes,
-        gt_labels=gt_labels,
-        return_loss=True)
+        imgs, img_metas, gt_bboxes=gt_bboxes, gt_labels=gt_labels, return_loss=True
+    )
     assert isinstance(losses, dict)
     from mmdet.apis.train import parse_losses
+
     total_loss = float(parse_losses(losses)[0].item())
     assert total_loss > 0
 
@@ -278,56 +264,54 @@ def test_faster_rcnn_ohem_forward():
         from torchvision import _C as C  # NOQA
     except ImportError:
         import pytest
-        raise pytest.skip('requires torchvision on cpu')
 
-    model, train_cfg, test_cfg = _get_detector_cfg(
-        'faster_rcnn_ohem_r50_fpn_1x.py')
-    model['pretrained'] = None
+        raise pytest.skip("requires torchvision on cpu")
+
+    model, train_cfg, test_cfg = _get_detector_cfg("faster_rcnn_ohem_r50_fpn_1x.py")
+    model["pretrained"] = None
     # torchvision roi align supports CPU
-    model['bbox_roi_extractor']['roi_layer']['use_torchvision'] = True
+    model["bbox_roi_extractor"]["roi_layer"]["use_torchvision"] = True
 
     from mmdet.models import build_detector
+
     detector = build_detector(model, train_cfg=train_cfg, test_cfg=test_cfg)
 
     input_shape = (1, 3, 256, 256)
 
     # Test forward train with a non-empty truth batch
     mm_inputs = _demo_mm_inputs(input_shape, num_items=[10])
-    imgs = mm_inputs.pop('imgs')
-    img_metas = mm_inputs.pop('img_metas')
-    gt_bboxes = mm_inputs['gt_bboxes']
-    gt_labels = mm_inputs['gt_labels']
+    imgs = mm_inputs.pop("imgs")
+    img_metas = mm_inputs.pop("img_metas")
+    gt_bboxes = mm_inputs["gt_bboxes"]
+    gt_labels = mm_inputs["gt_labels"]
     losses = detector.forward(
-        imgs,
-        img_metas,
-        gt_bboxes=gt_bboxes,
-        gt_labels=gt_labels,
-        return_loss=True)
+        imgs, img_metas, gt_bboxes=gt_bboxes, gt_labels=gt_labels, return_loss=True
+    )
     assert isinstance(losses, dict)
     from mmdet.apis.train import parse_losses
+
     total_loss = float(parse_losses(losses)[0].item())
     assert total_loss > 0
 
     # Test forward train with an empty truth batch
     mm_inputs = _demo_mm_inputs(input_shape, num_items=[0])
-    imgs = mm_inputs.pop('imgs')
-    img_metas = mm_inputs.pop('img_metas')
-    gt_bboxes = mm_inputs['gt_bboxes']
-    gt_labels = mm_inputs['gt_labels']
+    imgs = mm_inputs.pop("imgs")
+    img_metas = mm_inputs.pop("img_metas")
+    gt_bboxes = mm_inputs["gt_bboxes"]
+    gt_labels = mm_inputs["gt_labels"]
     losses = detector.forward(
-        imgs,
-        img_metas,
-        gt_bboxes=gt_bboxes,
-        gt_labels=gt_labels,
-        return_loss=True)
+        imgs, img_metas, gt_bboxes=gt_bboxes, gt_labels=gt_labels, return_loss=True
+    )
     assert isinstance(losses, dict)
     from mmdet.apis.train import parse_losses
+
     total_loss = float(parse_losses(losses)[0].item())
     assert total_loss > 0
 
 
-def _demo_mm_inputs(input_shape=(1, 3, 300, 300),
-                    num_items=None, num_classes=10):  # yapf: disable
+def _demo_mm_inputs(
+    input_shape=(1, 3, 300, 300), num_items=None, num_classes=10
+):  # yapf: disable
     """
     Create a superset of inputs needed to run test or train batches.
 
@@ -347,14 +331,17 @@ def _demo_mm_inputs(input_shape=(1, 3, 300, 300),
 
     imgs = rng.rand(*input_shape)
 
-    img_metas = [{
-        'img_shape': (H, W, C),
-        'ori_shape': (H, W, C),
-        'pad_shape': (H, W, C),
-        'filename': '<demo>.png',
-        'scale_factor': 1.0,
-        'flip': False,
-    } for _ in range(N)]
+    img_metas = [
+        {
+            "img_shape": (H, W, C),
+            "ori_shape": (H, W, C),
+            "pad_shape": (H, W, C),
+            "filename": "<demo>.png",
+            "scale_factor": 1.0,
+            "flip": False,
+        }
+        for _ in range(N)
+    ]
 
     gt_bboxes = []
     gt_labels = []
@@ -379,10 +366,10 @@ def _demo_mm_inputs(input_shape=(1, 3, 300, 300),
         gt_labels.append(torch.LongTensor(class_idxs))
 
     mm_inputs = {
-        'imgs': torch.FloatTensor(imgs),
-        'img_metas': img_metas,
-        'gt_bboxes': gt_bboxes,
-        'gt_labels': gt_labels,
-        'gt_bboxes_ignore': None,
+        "imgs": torch.FloatTensor(imgs),
+        "img_metas": img_metas,
+        "gt_bboxes": gt_bboxes,
+        "gt_labels": gt_labels,
+        "gt_bboxes_ignore": None,
     }
     return mm_inputs

@@ -11,11 +11,17 @@ from torch.utils.data import DataLoader
 from mmdet.utils import build_from_cfg
 from .dataset_wrappers import ConcatDataset, RepeatDataset
 from .registry import DATASETS
-from .samplers import DistributedGroupSampler, DistributedSampler, GroupSampler
+from .samplers import (
+    DistributedClassAwareSampler,
+    DistributedGroupSampler,
+    DistributedSampler,
+    GroupSampler,
+)
 
-if platform.system() != 'Windows':
+if platform.system() != "Windows":
     # https://github.com/pytorch/pytorch/issues/973
     import resource
+
     rlimit = resource.getrlimit(resource.RLIMIT_NOFILE)
     hard_limit = rlimit[1]
     soft_limit = min(4096, hard_limit)
@@ -23,22 +29,22 @@ if platform.system() != 'Windows':
 
 
 def _concat_dataset(cfg, default_args=None):
-    ann_files = cfg['ann_file']
-    img_prefixes = cfg.get('img_prefix', None)
-    seg_prefixes = cfg.get('seg_prefix', None)
-    proposal_files = cfg.get('proposal_file', None)
+    ann_files = cfg["ann_file"]
+    img_prefixes = cfg.get("img_prefix", None)
+    seg_prefixes = cfg.get("seg_prefix", None)
+    proposal_files = cfg.get("proposal_file", None)
 
     datasets = []
     num_dset = len(ann_files)
     for i in range(num_dset):
         data_cfg = copy.deepcopy(cfg)
-        data_cfg['ann_file'] = ann_files[i]
+        data_cfg["ann_file"] = ann_files[i]
         if isinstance(img_prefixes, (list, tuple)):
-            data_cfg['img_prefix'] = img_prefixes[i]
+            data_cfg["img_prefix"] = img_prefixes[i]
         if isinstance(seg_prefixes, (list, tuple)):
-            data_cfg['seg_prefix'] = seg_prefixes[i]
+            data_cfg["seg_prefix"] = seg_prefixes[i]
         if isinstance(proposal_files, (list, tuple)):
-            data_cfg['proposal_file'] = proposal_files[i]
+            data_cfg["proposal_file"] = proposal_files[i]
         datasets.append(build_dataset(data_cfg, default_args))
 
     return ConcatDataset(datasets)
@@ -47,10 +53,11 @@ def _concat_dataset(cfg, default_args=None):
 def build_dataset(cfg, default_args=None):
     if isinstance(cfg, (list, tuple)):
         dataset = ConcatDataset([build_dataset(c, default_args) for c in cfg])
-    elif cfg['type'] == 'RepeatDataset':
+    elif cfg["type"] == "RepeatDataset":
         dataset = RepeatDataset(
-            build_dataset(cfg['dataset'], default_args), cfg['times'])
-    elif isinstance(cfg.get('ann_file'), (list, tuple)):
+            build_dataset(cfg["dataset"], default_args), cfg["times"]
+        )
+    elif isinstance(cfg.get("ann_file"), (list, tuple)):
         dataset = _concat_dataset(cfg, default_args)
     else:
         dataset = build_from_cfg(cfg, DATASETS, default_args)
@@ -58,14 +65,18 @@ def build_dataset(cfg, default_args=None):
     return dataset
 
 
-def build_dataloader(dataset,
-                     imgs_per_gpu,
-                     workers_per_gpu,
-                     num_gpus=1,
-                     dist=True,
-                     shuffle=True,
-                     seed=None,
-                     **kwargs):
+def build_dataloader(
+    dataset,
+    imgs_per_gpu,
+    workers_per_gpu,
+    num_gpus=1,
+    dist=True,
+    shuffle=True,
+    seed=None,
+    class_aware_sampling=False,
+    class_sample_path=None,
+    **kwargs
+):
     """Build PyTorch DataLoader.
 
     In distributed training, each GPU/process has a dataloader.
@@ -90,12 +101,14 @@ def build_dataloader(dataset,
     if dist:
         # DistributedGroupSampler will definitely shuffle the data to satisfy
         # that images on each GPU are in the same group
-        if shuffle:
-            sampler = DistributedGroupSampler(dataset, imgs_per_gpu,
-                                              world_size, rank)
+        if class_aware_sampling:
+            sampler = DistributedClassAwareSampler(
+                dataset, world_size, rank, class_sample_path
+            )
+        elif shuffle:
+            sampler = DistributedGroupSampler(dataset, imgs_per_gpu, world_size, rank)
         else:
-            sampler = DistributedSampler(
-                dataset, world_size, rank, shuffle=False)
+            sampler = DistributedSampler(dataset, world_size, rank, shuffle=False)
         batch_size = imgs_per_gpu
         num_workers = workers_per_gpu
     else:
@@ -103,9 +116,11 @@ def build_dataloader(dataset,
         batch_size = num_gpus * imgs_per_gpu
         num_workers = num_gpus * workers_per_gpu
 
-    init_fn = partial(
-        worker_init_fn, num_workers=num_workers, rank=rank,
-        seed=seed) if seed is not None else None
+    init_fn = (
+        partial(worker_init_fn, num_workers=num_workers, rank=rank, seed=seed)
+        if seed is not None
+        else None
+    )
 
     data_loader = DataLoader(
         dataset,
@@ -115,7 +130,8 @@ def build_dataloader(dataset,
         collate_fn=partial(collate, samples_per_gpu=imgs_per_gpu),
         pin_memory=False,
         worker_init_fn=init_fn,
-        **kwargs)
+        **kwargs
+    )
 
     return data_loader
 

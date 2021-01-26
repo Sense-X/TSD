@@ -5,7 +5,7 @@ import numpy as np
 import torch
 from torch.autograd import gradcheck
 
-sys.path.append(osp.abspath(osp.join(__file__, '../../')))
+sys.path.append(osp.abspath(osp.join(__file__, "../../")))
 from roi_align import RoIAlign  # noqa: E402, isort:skip
 
 feat_size = 15
@@ -20,10 +20,11 @@ rois[:, 2:] += img_size * 0.5
 rois = np.hstack((batch_ind, rois))
 
 feat = torch.randn(
-    num_imgs, 16, feat_size, feat_size, requires_grad=True, device='cuda:0')
+    num_imgs, 16, feat_size, feat_size, requires_grad=True, device="cuda:0"
+)
 rois = torch.from_numpy(rois).float().cuda()
 inputs = (feat, rois)
-print('Gradcheck for roi align...')
+print("Gradcheck for roi align...")
 test = gradcheck(RoIAlign(3, spatial_scale), inputs, atol=1e-3, eps=1e-3)
 print(test)
 test = gradcheck(RoIAlign(3, spatial_scale, 2), inputs, atol=1e-3, eps=1e-3)

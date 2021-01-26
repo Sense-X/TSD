@@ -9,7 +9,6 @@ from . import carafe_cuda, carafe_naive_cuda
 
 
 class CARAFENaiveFunction(Function):
-
     @staticmethod
     def forward(ctx, features, masks, kernel_size, group_size, scale_factor):
         assert scale_factor >= 1
@@ -27,8 +26,9 @@ class CARAFENaiveFunction(Function):
         n, c, h, w = features.size()
         output = features.new_zeros((n, c, h * scale_factor, w * scale_factor))
         if features.is_cuda:
-            carafe_naive_cuda.forward(features, masks, kernel_size, group_size,
-                                      scale_factor, output)
+            carafe_naive_cuda.forward(
+                features, masks, kernel_size, group_size, scale_factor, output
+            )
         else:
             raise NotImplementedError
 
@@ -47,9 +47,16 @@ class CARAFENaiveFunction(Function):
 
         grad_input = torch.zeros_like(features)
         grad_masks = torch.zeros_like(masks)
-        carafe_naive_cuda.backward(grad_output.contiguous(), features, masks,
-                                   kernel_size, group_size, scale_factor,
-                                   grad_input, grad_masks)
+        carafe_naive_cuda.backward(
+            grad_output.contiguous(),
+            features,
+            masks,
+            kernel_size,
+            group_size,
+            scale_factor,
+            grad_input,
+            grad_masks,
+        )
 
         return grad_input, grad_masks, None, None, None
 
@@ -58,23 +65,25 @@ carafe_naive = CARAFENaiveFunction.apply
 
 
 class CARAFENaive(Module):
-
     def __init__(self, kernel_size, group_size, scale_factor):
         super(CARAFENaive, self).__init__()
 
-        assert isinstance(kernel_size, int) and isinstance(
-            group_size, int) and isinstance(scale_factor, int)
+        assert (
+            isinstance(kernel_size, int)
+            and isinstance(group_size, int)
+            and isinstance(scale_factor, int)
+        )
         self.kernel_size = kernel_size
         self.group_size = group_size
         self.scale_factor = scale_factor
 
     def forward(self, features, masks):
-        return CARAFENaiveFunction.apply(features, masks, self.kernel_size,
-                                         self.group_size, self.scale_factor)
+        return CARAFENaiveFunction.apply(
+            features, masks, self.kernel_size, self.group_size, self.scale_factor
+        )
 
 
 class CARAFEFunction(Function):
-
     @staticmethod
     def forward(ctx, features, masks, kernel_size, group_size, scale_factor):
         assert scale_factor >= 1
@@ -95,9 +104,17 @@ class CARAFEFunction(Function):
         rfeatures = features.new_zeros(features.size(), requires_grad=False)
         rmasks = masks.new_zeros(masks.size(), requires_grad=False)
         if features.is_cuda:
-            carafe_cuda.forward(features, rfeatures, masks, rmasks,
-                                kernel_size, group_size, scale_factor, routput,
-                                output)
+            carafe_cuda.forward(
+                features,
+                rfeatures,
+                masks,
+                rmasks,
+                kernel_size,
+                group_size,
+                scale_factor,
+                routput,
+                output,
+            )
         else:
             raise NotImplementedError
 
@@ -120,10 +137,20 @@ class CARAFEFunction(Function):
         rgrad_masks = torch.zeros_like(masks, requires_grad=False)
         grad_input = torch.zeros_like(features, requires_grad=False)
         grad_masks = torch.zeros_like(masks, requires_grad=False)
-        carafe_cuda.backward(grad_output.contiguous(), rfeatures, masks,
-                             kernel_size, group_size, scale_factor,
-                             rgrad_output, rgrad_input_hs, rgrad_input,
-                             rgrad_masks, grad_input, grad_masks)
+        carafe_cuda.backward(
+            grad_output.contiguous(),
+            rfeatures,
+            masks,
+            kernel_size,
+            group_size,
+            scale_factor,
+            rgrad_output,
+            rgrad_input_hs,
+            rgrad_input,
+            rgrad_masks,
+            grad_input,
+            grad_masks,
+        )
         return grad_input, grad_masks, None, None, None, None
 
 
@@ -147,15 +174,19 @@ class CARAFE(Module):
     def __init__(self, kernel_size, group_size, scale_factor):
         super(CARAFE, self).__init__()
 
-        assert isinstance(kernel_size, int) and isinstance(
-            group_size, int) and isinstance(scale_factor, int)
+        assert (
+            isinstance(kernel_size, int)
+            and isinstance(group_size, int)
+            and isinstance(scale_factor, int)
+        )
         self.kernel_size = kernel_size
         self.group_size = group_size
         self.scale_factor = scale_factor
 
     def forward(self, features, masks):
-        return CARAFEFunction.apply(features, masks, self.kernel_size,
-                                    self.group_size, self.scale_factor)
+        return CARAFEFunction.apply(
+            features, masks, self.kernel_size, self.group_size, self.scale_factor
+        )
 
 
 class CARAFEPack(nn.Module):
@@ -179,14 +210,16 @@ class CARAFEPack(nn.Module):
         upsampled feature map
     """
 
-    def __init__(self,
-                 channels,
-                 scale_factor,
-                 up_kernel=5,
-                 up_group=1,
-                 encoder_kernel=3,
-                 encoder_dilation=1,
-                 compressed_channels=64):
+    def __init__(
+        self,
+        channels,
+        scale_factor,
+        up_kernel=5,
+        up_group=1,
+        encoder_kernel=3,
+        encoder_dilation=1,
+        compressed_channels=64,
+    ):
         super(CARAFEPack, self).__init__()
         self.channels = channels
         self.scale_factor = scale_factor
@@ -195,22 +228,25 @@ class CARAFEPack(nn.Module):
         self.encoder_kernel = encoder_kernel
         self.encoder_dilation = encoder_dilation
         self.compressed_channels = compressed_channels
-        self.channel_compressor = nn.Conv2d(channels, self.compressed_channels,
-                                            1)
+        self.channel_compressor = nn.Conv2d(channels, self.compressed_channels, 1)
         self.content_encoder = nn.Conv2d(
             self.compressed_channels,
-            self.up_kernel * self.up_kernel * self.up_group *
-            self.scale_factor * self.scale_factor,
+            self.up_kernel
+            * self.up_kernel
+            * self.up_group
+            * self.scale_factor
+            * self.scale_factor,
             self.encoder_kernel,
             padding=int((self.encoder_kernel - 1) * self.encoder_dilation / 2),
             dilation=self.encoder_dilation,
-            groups=1)
+            groups=1,
+        )
         self.init_weights()
 
     def init_weights(self):
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
-                xavier_init(m, distribution='uniform')
+                xavier_init(m, distribution="uniform")
         normal_init(self.content_encoder, std=0.001)
 
     def kernel_normalizer(self, mask):

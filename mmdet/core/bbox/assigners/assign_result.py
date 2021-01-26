@@ -59,11 +59,11 @@ class AssignResult(util_mixins.NiceRepr):
         Returns a dictionary of info about the object
         """
         return {
-            'num_gts': self.num_gts,
-            'num_preds': self.num_preds,
-            'gt_inds': self.gt_inds,
-            'max_overlaps': self.max_overlaps,
-            'labels': self.labels,
+            "num_gts": self.num_gts,
+            "num_preds": self.num_preds,
+            "gt_inds": self.gt_inds,
+            "max_overlaps": self.max_overlaps,
+            "labels": self.labels,
         }
 
     def __nice__(self):
@@ -71,22 +71,22 @@ class AssignResult(util_mixins.NiceRepr):
         Create a "nice" summary string describing this assign result
         """
         parts = []
-        parts.append('num_gts={!r}'.format(self.num_gts))
+        parts.append("num_gts={!r}".format(self.num_gts))
         if self.gt_inds is None:
-            parts.append('gt_inds={!r}'.format(self.gt_inds))
+            parts.append("gt_inds={!r}".format(self.gt_inds))
         else:
-            parts.append('gt_inds.shape={!r}'.format(
-                tuple(self.gt_inds.shape)))
+            parts.append("gt_inds.shape={!r}".format(tuple(self.gt_inds.shape)))
         if self.max_overlaps is None:
-            parts.append('max_overlaps={!r}'.format(self.max_overlaps))
+            parts.append("max_overlaps={!r}".format(self.max_overlaps))
         else:
-            parts.append('max_overlaps.shape={!r}'.format(
-                tuple(self.max_overlaps.shape)))
+            parts.append(
+                "max_overlaps.shape={!r}".format(tuple(self.max_overlaps.shape))
+            )
         if self.labels is None:
-            parts.append('labels={!r}'.format(self.labels))
+            parts.append("labels={!r}".format(self.labels))
         else:
-            parts.append('labels.shape={!r}'.format(tuple(self.labels.shape)))
-        return ', '.join(parts)
+            parts.append("labels.shape={!r}".format(tuple(self.labels.shape)))
+        return ", ".join(parts)
 
     @classmethod
     def random(cls, **kwargs):
@@ -112,14 +112,15 @@ class AssignResult(util_mixins.NiceRepr):
             >>> print(self.info)
         """
         from mmdet.core.bbox import demodata
-        rng = demodata.ensure_rng(kwargs.get('rng', None))
 
-        num_gts = kwargs.get('num_gts', None)
-        num_preds = kwargs.get('num_preds', None)
-        p_ignore = kwargs.get('p_ignore', 0.3)
-        p_assigned = kwargs.get('p_assigned', 0.7)
-        p_use_label = kwargs.get('p_use_label', 0.5)
-        num_classes = kwargs.get('p_use_label', 3)
+        rng = demodata.ensure_rng(kwargs.get("rng", None))
+
+        num_gts = kwargs.get("num_gts", None)
+        num_preds = kwargs.get("num_preds", None)
+        p_ignore = kwargs.get("p_ignore", 0.3)
+        p_assigned = kwargs.get("p_assigned", 0.7)
+        p_use_label = kwargs.get("p_use_label", 0.5)
+        num_classes = kwargs.get("p_use_label", 3)
 
         if num_gts is None:
             num_gts = rng.randint(0, 8)
@@ -135,6 +136,7 @@ class AssignResult(util_mixins.NiceRepr):
                 labels = None
         else:
             import numpy as np
+
             # Create an overlap for each predicted box
             max_overlaps = torch.from_numpy(rng.rand(num_preds))
 
@@ -151,8 +153,7 @@ class AssignResult(util_mixins.NiceRepr):
             is_assigned[:] = 0
             is_assigned[assigned_idxs] = True
 
-            is_ignore = torch.from_numpy(
-                rng.rand(num_preds) < p_ignore) & is_assigned
+            is_ignore = torch.from_numpy(rng.rand(num_preds) < p_ignore) & is_assigned
 
             gt_inds = torch.zeros(num_preds, dtype=torch.int64)
 
@@ -161,8 +162,7 @@ class AssignResult(util_mixins.NiceRepr):
             true_idxs = torch.from_numpy(true_idxs)
             gt_inds[is_assigned] = true_idxs[:n_assigned]
 
-            gt_inds = torch.from_numpy(
-                rng.randint(1, num_gts + 1, size=num_preds))
+            gt_inds = torch.from_numpy(rng.randint(1, num_gts + 1, size=num_preds))
             gt_inds[is_ignore] = -1
             gt_inds[~is_assigned] = 0
             max_overlaps[~is_assigned] = 0
@@ -172,7 +172,8 @@ class AssignResult(util_mixins.NiceRepr):
                     labels = torch.zeros(num_preds, dtype=torch.int64)
                 else:
                     labels = torch.from_numpy(
-                        rng.randint(1, num_classes + 1, size=num_preds))
+                        rng.randint(1, num_classes + 1, size=num_preds)
+                    )
                     labels[~is_assigned] = 0
             else:
                 labels = None
@@ -182,11 +183,13 @@ class AssignResult(util_mixins.NiceRepr):
 
     def add_gt_(self, gt_labels):
         self_inds = torch.arange(
-            1, len(gt_labels) + 1, dtype=torch.long, device=gt_labels.device)
+            1, len(gt_labels) + 1, dtype=torch.long, device=gt_labels.device
+        )
         self.gt_inds = torch.cat([self_inds, self.gt_inds])
 
         self.max_overlaps = torch.cat(
-            [self.max_overlaps.new_ones(len(gt_labels)), self.max_overlaps])
+            [self.max_overlaps.new_ones(len(gt_labels)), self.max_overlaps]
+        )
 
         if self.labels is not None:
             self.labels = torch.cat([gt_labels, self.labels])

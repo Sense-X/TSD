@@ -24,12 +24,14 @@ class Fp16OptimizerHook(OptimizerHook):
         loss_scale (float): Scale factor multiplied with loss.
     """
 
-    def __init__(self,
-                 grad_clip=None,
-                 coalesce=True,
-                 bucket_size_mb=-1,
-                 loss_scale=512.,
-                 distributed=True):
+    def __init__(
+        self,
+        grad_clip=None,
+        coalesce=True,
+        bucket_size_mb=-1,
+        loss_scale=512.0,
+        distributed=True,
+    ):
         self.grad_clip = grad_clip
         self.coalesce = coalesce
         self.bucket_size_mb = bucket_size_mb
@@ -38,8 +40,7 @@ class Fp16OptimizerHook(OptimizerHook):
 
     def before_run(self, runner):
         # keep a copy of fp32 weights
-        runner.optimizer.param_groups = copy.deepcopy(
-            runner.optimizer.param_groups)
+        runner.optimizer.param_groups = copy.deepcopy(runner.optimizer.param_groups)
         # convert model to fp16
         wrap_fp16_model(runner.model)
 
@@ -61,12 +62,12 @@ class Fp16OptimizerHook(OptimizerHook):
         runner.model.zero_grad()
         runner.optimizer.zero_grad()
         # scale the loss value
-        scaled_loss = runner.outputs['loss'] * self.loss_scale
+        scaled_loss = runner.outputs["loss"] * self.loss_scale
         scaled_loss.backward()
         # copy fp16 grads in the model to fp32 params in the optimizer
         fp32_weights = []
         for param_group in runner.optimizer.param_groups:
-            fp32_weights += param_group['params']
+            fp32_weights += param_group["params"]
         self.copy_grads_to_fp32(runner.model, fp32_weights)
         # allreduce grads
         if self.distributed:
@@ -90,16 +91,17 @@ def wrap_fp16_model(model):
     patch_norm_fp32(model)
     # set `fp16_enabled` flag
     for m in model.modules():
-        if hasattr(m, 'fp16_enabled'):
+        if hasattr(m, "fp16_enabled"):
             m.fp16_enabled = True
 
 
 def patch_norm_fp32(module):
     if isinstance(module, (nn.modules.batchnorm._BatchNorm, nn.GroupNorm)):
         module.float()
-        if isinstance(module, nn.GroupNorm) or torch.__version__ < '1.3':
-            module.forward = patch_forward_method(module.forward, torch.half,
-                                                  torch.float)
+        if isinstance(module, nn.GroupNorm) or torch.__version__ < "1.3":
+            module.forward = patch_forward_method(
+                module.forward, torch.half, torch.float
+            )
     for child in module.children():
         patch_norm_fp32(child)
     return module
@@ -119,8 +121,10 @@ def patch_forward_method(func, src_type, dst_type, convert_output=True):
     """
 
     def new_forward(*args, **kwargs):
-        output = func(*cast_tensor_type(args, src_type, dst_type),
-                      **cast_tensor_type(kwargs, src_type, dst_type))
+        output = func(
+            *cast_tensor_type(args, src_type, dst_type),
+            **cast_tensor_type(kwargs, src_type, dst_type)
+        )
         if convert_output:
             output = cast_tensor_type(output, dst_type, src_type)
         return output

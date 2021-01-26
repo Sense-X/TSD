@@ -26,12 +26,13 @@ def merge_aug_proposals(aug_proposals, img_metas, rpn_test_cfg):
     """
     recovered_proposals = []
     for proposals, img_info in zip(aug_proposals, img_metas):
-        img_shape = img_info['img_shape']
-        scale_factor = img_info['scale_factor']
-        flip = img_info['flip']
+        img_shape = img_info["img_shape"]
+        scale_factor = img_info["scale_factor"]
+        flip = img_info["flip"]
         _proposals = proposals.clone()
-        _proposals[:, :4] = bbox_mapping_back(_proposals[:, :4], img_shape,
-                                              scale_factor, flip)
+        _proposals[:, :4] = bbox_mapping_back(
+            _proposals[:, :4], img_shape, scale_factor, flip
+        )
         recovered_proposals.append(_proposals)
     aug_proposals = torch.cat(recovered_proposals, dim=0)
     merged_proposals, _ = nms(aug_proposals, rpn_test_cfg.nms_thr)
@@ -57,9 +58,9 @@ def merge_aug_bboxes(aug_bboxes, aug_scores, img_metas, rcnn_test_cfg):
     """
     recovered_bboxes = []
     for bboxes, img_info in zip(aug_bboxes, img_metas):
-        img_shape = img_info[0]['img_shape']
-        scale_factor = img_info[0]['scale_factor']
-        flip = img_info[0]['flip']
+        img_shape = img_info[0]["img_shape"]
+        scale_factor = img_info[0]["scale_factor"]
+        flip = img_info[0]["flip"]
         bboxes = bbox_mapping_back(bboxes, img_shape, scale_factor, flip)
         recovered_bboxes.append(bboxes)
     bboxes = torch.stack(recovered_bboxes).mean(dim=0)
@@ -90,12 +91,13 @@ def merge_aug_masks(aug_masks, img_metas, rcnn_test_cfg, weights=None):
         tuple: (bboxes, scores)
     """
     recovered_masks = [
-        mask if not img_info[0]['flip'] else mask[..., ::-1]
+        mask if not img_info[0]["flip"] else mask[..., ::-1]
         for mask, img_info in zip(aug_masks, img_metas)
     ]
     if weights is None:
         merged_masks = np.mean(recovered_masks, axis=0)
     else:
         merged_masks = np.average(
-            np.array(recovered_masks), axis=0, weights=np.array(weights))
+            np.array(recovered_masks), axis=0, weights=np.array(weights)
+        )
     return merged_masks
