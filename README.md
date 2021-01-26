@@ -2,7 +2,7 @@
 
 **News**:
 
-2021.1.26: We add supports for openimages dataset and also release the pretrained models.
+**2021.1.26: We add supports for openimages dataset and also release the pretrained models.**
 
 2020.6.9: We add supports for Mask RCNN and Cascade RCNN. The pretrained models are also released via GoogleDrive.
 
@@ -42,7 +42,7 @@ The corresponding configuration can be found in (faster_rcnn_r50_fpn_TSD_1x.py, 
 
 We add supports for both coco dataset and openimages dataset. Datasets should be organized as following.
 
-Files in `./TSD/data/OpenImages/challenge2019` can be downloaded from [here]().
+Files in `./TSD/data/OpenImages/challenge2019` can be downloaded from [here](https://drive.google.com/file/d/1ET5a0ciD8kJDZDz35iNFPad-lVMAswV8/view?usp=sharing).
 
 ```bash
 TSD/data
