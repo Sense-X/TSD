@@ -1,6 +1,9 @@
 # TSD
 
 **News**:
+
+2021.1.26: We add supports for openimages dataset and also release the pretrained models.
+
 2020.6.9: We add supports for Mask RCNN and Cascade RCNN. The pretrained models are also released via GoogleDrive.
 
 2020.5.8: We add supports for fp16 training with TSD and update the performance on X101_64x4d backbone.
@@ -35,7 +38,31 @@ The corresponding configuration can be found in (faster_rcnn_r50_fpn_TSD_1x.py, 
 1. LR can be set to base_lr\*total_batch (base_lr=0.00125, 0.04 = 0.00125\*32 in our experiments.)
 2. An external epoch can be used to perform warmup. (base_lr will be incresed to LR in the first epoch)
 
-## Experiments
+## Preparing Data
+
+We add supports for both coco dataset and openimages dataset. Datasets should be organized as following.
+
+Files in `./TSD/data/OpenImages/challenge2019` can be downloaded from [here]().
+
+```bash
+TSD/data
+├── coco
+│   ├── annotations
+│   ├── train2017
+│   └── val2017
+└── OpenImages
+    ├── challenge2019
+    │   ├── challenge-2019-train-detection-bbox.txt
+    │   ├── challenge-2019-validation-detection-bbox.txt
+    │   ├── class_label_tree.np
+    │   └── class_sample_train.pkl
+    └── OpenImages
+        ├── test
+        ├── train
+        └── validation
+```
+
+## Experiments on COCO Dataset
 
 Reimplemented methods and backbones are shown in the below table. It's based on the Faster RCNN with FPN.
 More backbones and experiments are underway.
@@ -75,6 +102,14 @@ We train the ResNext101-64x4d model with DCN and multi-scale training. Evaluatio
 | Backbone           | TSD   |AP             | AP_0.5  | AP_0.75  | AP_s    | AP_m      | AP_l     | Download |
 |:------------------:|:-----:|:-------------:|:-------:|:--------:|:--------:|:---------:|:--------:|:--------:|
 | X-101-64x4d-FPN      | ✓   | 49.2           | 70.1    | 53.8     | 33.2    | 53.1      |63.7      | [model](https://drive.google.com/open?id=1tMf_7Aix2Tx0itVZtnPF-FbqfX2RM4zL) |
+## Experiments on OpenImages Dataset
+
+For standard Faster RCNN
+| Backbone           | TSD   | AP              | Download |
+|:--------------------:|:-----:|:--------------:|:-------:|
+| ResNet50           |       | 70.7     | [model](https://drive.google.com/file/d/1Nf7wNTKesjlZD1sanNmGJTPAVYzEiOGg/view?usp=sharing)|
+| ResNet50           | ✓     | **72.2**  | [model](https://drive.google.com/file/d/1yssanW8ny-nXDUijXaYXWrV6FxVSvZ9K/view?usp=sharing) |
+
 
 ## Installation
 

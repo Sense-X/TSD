@@ -31,20 +31,22 @@ class ConvModule(nn.Module):
             ("conv", "norm", "act") and ("act", "conv", "norm").
     """
 
-    def __init__(self,
-                 in_channels,
-                 out_channels,
-                 kernel_size,
-                 stride=1,
-                 padding=0,
-                 dilation=1,
-                 groups=1,
-                 bias='auto',
-                 conv_cfg=None,
-                 norm_cfg=None,
-                 act_cfg=dict(type='ReLU'),
-                 inplace=True,
-                 order=('conv', 'norm', 'act')):
+    def __init__(
+        self,
+        in_channels,
+        out_channels,
+        kernel_size,
+        stride=1,
+        padding=0,
+        dilation=1,
+        groups=1,
+        bias="auto",
+        conv_cfg=None,
+        norm_cfg=None,
+        act_cfg=dict(type="ReLU"),
+        inplace=True,
+        order=("conv", "norm", "act"),
+    ):
         super(ConvModule, self).__init__()
         assert conv_cfg is None or isinstance(conv_cfg, dict)
         assert norm_cfg is None or isinstance(norm_cfg, dict)
@@ -55,17 +57,17 @@ class ConvModule(nn.Module):
         self.inplace = inplace
         self.order = order
         assert isinstance(self.order, tuple) and len(self.order) == 3
-        assert set(order) == set(['conv', 'norm', 'act'])
+        assert set(order) == set(["conv", "norm", "act"])
 
         self.with_norm = norm_cfg is not None
         self.with_activation = act_cfg is not None
         # if the conv layer is before a norm layer, bias is unnecessary.
-        if bias == 'auto':
+        if bias == "auto":
             bias = False if self.with_norm else True
         self.with_bias = bias
 
         if self.with_norm and self.with_bias:
-            warnings.warn('ConvModule has norm and bias at the same time')
+            warnings.warn("ConvModule has norm and bias at the same time")
 
         # build convolution layer
         self.conv = build_conv_layer(
@@ -77,7 +79,8 @@ class ConvModule(nn.Module):
             padding=padding,
             dilation=dilation,
             groups=groups,
-            bias=bias)
+            bias=bias,
+        )
         # export the attributes of self.conv to a higher level for convenience
         self.in_channels = self.conv.in_channels
         self.out_channels = self.conv.out_channels
@@ -92,7 +95,7 @@ class ConvModule(nn.Module):
         # build normalization layers
         if self.with_norm:
             # norm layer is after conv layer
-            if order.index('norm') > order.index('conv'):
+            if order.index("norm") > order.index("conv"):
                 norm_channels = out_channels
             else:
                 norm_channels = in_channels
@@ -102,7 +105,7 @@ class ConvModule(nn.Module):
         # build activation layer
         if self.with_activation:
             act_cfg_ = act_cfg.copy()
-            act_cfg_.setdefault('inplace', inplace)
+            act_cfg_.setdefault("inplace", inplace)
             self.activate = build_activation_layer(act_cfg_)
 
         # Use msra init by default
@@ -113,20 +116,20 @@ class ConvModule(nn.Module):
         return getattr(self, self.norm_name)
 
     def init_weights(self):
-        if self.with_activation and self.act_cfg['type'] == 'LeakyReLU':
-            nonlinearity = 'leaky_relu'
+        if self.with_activation and self.act_cfg["type"] == "LeakyReLU":
+            nonlinearity = "leaky_relu"
         else:
-            nonlinearity = 'relu'
+            nonlinearity = "relu"
         kaiming_init(self.conv, nonlinearity=nonlinearity)
         if self.with_norm:
             constant_init(self.norm, 1, bias=0)
 
     def forward(self, x, activate=True, norm=True):
         for layer in self.order:
-            if layer == 'conv':
+            if layer == "conv":
                 x = self.conv(x)
-            elif layer == 'norm' and norm and self.with_norm:
+            elif layer == "norm" and norm and self.with_norm:
                 x = self.norm(x)
-            elif layer == 'act' and activate and self.with_activation:
+            elif layer == "act" and activate and self.with_activation:
                 x = self.activate(x)
         return x

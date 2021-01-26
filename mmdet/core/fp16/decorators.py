@@ -37,15 +37,15 @@ def auto_fp16(apply_to=None, out_fp32=False):
     """
 
     def auto_fp16_wrapper(old_func):
-
         @functools.wraps(old_func)
         def new_func(*args, **kwargs):
             # check if the module has set the attribute `fp16_enabled`, if not,
             # just fallback to the original method.
             if not isinstance(args[0], torch.nn.Module):
-                raise TypeError('@auto_fp16 can only be used to decorate the '
-                                'method of nn.Module')
-            if not (hasattr(args[0], 'fp16_enabled') and args[0].fp16_enabled):
+                raise TypeError(
+                    "@auto_fp16 can only be used to decorate the " "method of nn.Module"
+                )
+            if not (hasattr(args[0], "fp16_enabled") and args[0].fp16_enabled):
                 return old_func(*args, **kwargs)
             # get the arg spec of the decorated method
             args_info = getfullargspec(old_func)
@@ -55,11 +55,12 @@ def auto_fp16(apply_to=None, out_fp32=False):
             new_args = []
             # NOTE: default args are not taken into consideration
             if args:
-                arg_names = args_info.args[:len(args)]
+                arg_names = args_info.args[: len(args)]
                 for i, arg_name in enumerate(arg_names):
                     if arg_name in args_to_cast:
                         new_args.append(
-                            cast_tensor_type(args[i], torch.float, torch.half))
+                            cast_tensor_type(args[i], torch.float, torch.half)
+                        )
                     else:
                         new_args.append(args[i])
             # convert the kwargs that need to be processed
@@ -68,7 +69,8 @@ def auto_fp16(apply_to=None, out_fp32=False):
                 for arg_name, arg_value in kwargs.items():
                     if arg_name in args_to_cast:
                         new_kwargs[arg_name] = cast_tensor_type(
-                            arg_value, torch.float, torch.half)
+                            arg_value, torch.float, torch.half
+                        )
                     else:
                         new_kwargs[arg_name] = arg_value
             # apply converted arguments to the decorated method
@@ -115,15 +117,16 @@ def force_fp32(apply_to=None, out_fp16=False):
     """
 
     def force_fp32_wrapper(old_func):
-
         @functools.wraps(old_func)
         def new_func(*args, **kwargs):
             # check if the module has set the attribute `fp16_enabled`, if not,
             # just fallback to the original method.
             if not isinstance(args[0], torch.nn.Module):
-                raise TypeError('@force_fp32 can only be used to decorate the '
-                                'method of nn.Module')
-            if not (hasattr(args[0], 'fp16_enabled') and args[0].fp16_enabled):
+                raise TypeError(
+                    "@force_fp32 can only be used to decorate the "
+                    "method of nn.Module"
+                )
+            if not (hasattr(args[0], "fp16_enabled") and args[0].fp16_enabled):
                 return old_func(*args, **kwargs)
             # get the arg spec of the decorated method
             args_info = getfullargspec(old_func)
@@ -132,11 +135,12 @@ def force_fp32(apply_to=None, out_fp16=False):
             # convert the args that need to be processed
             new_args = []
             if args:
-                arg_names = args_info.args[:len(args)]
+                arg_names = args_info.args[: len(args)]
                 for i, arg_name in enumerate(arg_names):
                     if arg_name in args_to_cast:
                         new_args.append(
-                            cast_tensor_type(args[i], torch.half, torch.float))
+                            cast_tensor_type(args[i], torch.half, torch.float)
+                        )
                     else:
                         new_args.append(args[i])
             # convert the kwargs that need to be processed
@@ -145,7 +149,8 @@ def force_fp32(apply_to=None, out_fp16=False):
                 for arg_name, arg_value in kwargs.items():
                     if arg_name in args_to_cast:
                         new_kwargs[arg_name] = cast_tensor_type(
-                            arg_value, torch.half, torch.float)
+                            arg_value, torch.half, torch.float
+                        )
                     else:
                         new_kwargs[arg_name] = arg_value
             # apply converted arguments to the decorated method

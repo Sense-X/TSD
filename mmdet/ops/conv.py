@@ -4,10 +4,10 @@ from .conv_ws import ConvWS2d
 from .dcn import DeformConvPack, ModulatedDeformConvPack
 
 conv_cfg = {
-    'Conv': nn.Conv2d,
-    'ConvWS': ConvWS2d,
-    'DCN': DeformConvPack,
-    'DCNv2': ModulatedDeformConvPack,
+    "Conv": nn.Conv2d,
+    "ConvWS": ConvWS2d,
+    "DCN": DeformConvPack,
+    "DCNv2": ModulatedDeformConvPack,
     # TODO: octave conv
 }
 
@@ -24,14 +24,14 @@ def build_conv_layer(cfg, *args, **kwargs):
         layer (nn.Module): created conv layer
     """
     if cfg is None:
-        cfg_ = dict(type='Conv')
+        cfg_ = dict(type="Conv")
     else:
-        assert isinstance(cfg, dict) and 'type' in cfg
+        assert isinstance(cfg, dict) and "type" in cfg
         cfg_ = cfg.copy()
 
-    layer_type = cfg_.pop('type')
+    layer_type = cfg_.pop("type")
     if layer_type not in conv_cfg:
-        raise KeyError('Unrecognized norm type {}'.format(layer_type))
+        raise KeyError("Unrecognized norm type {}".format(layer_type))
     else:
         conv_layer = conv_cfg[layer_type]
 

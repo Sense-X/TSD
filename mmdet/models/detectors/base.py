@@ -18,19 +18,19 @@ class BaseDetector(nn.Module, metaclass=ABCMeta):
 
     @property
     def with_neck(self):
-        return hasattr(self, 'neck') and self.neck is not None
+        return hasattr(self, "neck") and self.neck is not None
 
     @property
     def with_shared_head(self):
-        return hasattr(self, 'shared_head') and self.shared_head is not None
+        return hasattr(self, "shared_head") and self.shared_head is not None
 
     @property
     def with_bbox(self):
-        return hasattr(self, 'bbox_head') and self.bbox_head is not None
+        return hasattr(self, "bbox_head") and self.bbox_head is not None
 
     @property
     def with_mask(self):
-        return hasattr(self, 'mask_head') and self.mask_head is not None
+        return hasattr(self, "mask_head") and self.mask_head is not None
 
     @abstractmethod
     def extract_feat(self, imgs):
@@ -72,19 +72,20 @@ class BaseDetector(nn.Module, metaclass=ABCMeta):
 
     def init_weights(self, pretrained=None):
         if pretrained is not None:
-            print_log('load model from: {}'.format(pretrained), logger='root')
+            print_log("load model from: {}".format(pretrained), logger="root")
 
     async def aforward_test(self, *, img, img_metas, **kwargs):
-        for var, name in [(img, 'img'), (img_metas, 'img_metas')]:
+        for var, name in [(img, "img"), (img_metas, "img_metas")]:
             if not isinstance(var, list):
-                raise TypeError('{} must be a list, but got {}'.format(
-                    name, type(var)))
+                raise TypeError("{} must be a list, but got {}".format(name, type(var)))
 
         num_augs = len(img)
         if num_augs != len(img_metas):
             raise ValueError(
-                'num of augmentations ({}) != num of image metas ({})'.format(
-                    len(img), len(img_metas)))
+                "num of augmentations ({}) != num of image metas ({})".format(
+                    len(img), len(img_metas)
+                )
+            )
         # TODO: remove the restriction of imgs_per_gpu == 1 when prepared
         imgs_per_gpu = img[0].size(0)
         assert imgs_per_gpu == 1
@@ -104,16 +105,17 @@ class BaseDetector(nn.Module, metaclass=ABCMeta):
                 augs (multiscale, flip, etc.) and the inner list indicates
                 images in a batch.
         """
-        for var, name in [(imgs, 'imgs'), (img_metas, 'img_metas')]:
+        for var, name in [(imgs, "imgs"), (img_metas, "img_metas")]:
             if not isinstance(var, list):
-                raise TypeError('{} must be a list, but got {}'.format(
-                    name, type(var)))
+                raise TypeError("{} must be a list, but got {}".format(name, type(var)))
 
         num_augs = len(imgs)
         if num_augs != len(img_metas):
             raise ValueError(
-                'num of augmentations ({}) != num of image meta ({})'.format(
-                    len(imgs), len(img_metas)))
+                "num of augmentations ({}) != num of image meta ({})".format(
+                    len(imgs), len(img_metas)
+                )
+            )
         # TODO: remove the restriction of imgs_per_gpu == 1 when prepared
         imgs_per_gpu = imgs[0].size(0)
         assert imgs_per_gpu == 1
@@ -125,15 +127,15 @@ class BaseDetector(nn.Module, metaclass=ABCMeta):
                 images in a batch. The Tensor should have a shape Px4, where
                 P is the number of proposals.
             """
-            if 'proposals' in kwargs:
-                kwargs['proposals'] = kwargs['proposals'][0]
+            if "proposals" in kwargs:
+                kwargs["proposals"] = kwargs["proposals"][0]
             return self.simple_test(imgs[0], img_metas[0], **kwargs)
         else:
             # TODO: support test augmentation for predefined proposals
-            assert 'proposals' not in kwargs
+            assert "proposals" not in kwargs
             return self.aug_test(imgs, img_metas, **kwargs)
 
-    @auto_fp16(apply_to=('img', ))
+    @auto_fp16(apply_to=("img",))
     def forward(self, img, img_metas, return_loss=True, **kwargs):
         """
         Calls either forward_train or forward_test depending on whether
@@ -154,9 +156,9 @@ class BaseDetector(nn.Module, metaclass=ABCMeta):
         else:
             bbox_result, segm_result = result, None
 
-        img_tensor = data['img'][0]
-        img_metas = data['img_metas'][0].data[0]
-        imgs = tensor2imgs(img_tensor, **img_metas[0]['img_norm_cfg'])
+        img_tensor = data["img"][0]
+        img_metas = data["img_metas"][0].data[0]
+        imgs = tensor2imgs(img_tensor, **img_metas[0]["img_norm_cfg"])
         assert len(imgs) == len(img_metas)
 
         if dataset is None:
@@ -167,11 +169,12 @@ class BaseDetector(nn.Module, metaclass=ABCMeta):
             class_names = dataset
         else:
             raise TypeError(
-                'dataset must be a valid dataset name or a sequence'
-                ' of class names, not {}'.format(type(dataset)))
+                "dataset must be a valid dataset name or a sequence"
+                " of class names, not {}".format(type(dataset))
+            )
 
         for img, img_meta in zip(imgs, img_metas):
-            h, w, _ = img_meta['img_shape']
+            h, w, _ = img_meta["img_shape"]
             img_show = img[:h, :w, :]
 
             bboxes = np.vstack(bbox_result)
@@ -180,8 +183,7 @@ class BaseDetector(nn.Module, metaclass=ABCMeta):
                 segms = mmcv.concat_list(segm_result)
                 inds = np.where(bboxes[:, -1] > score_thr)[0]
                 for i in inds:
-                    color_mask = np.random.randint(
-                        0, 256, (1, 3), dtype=np.uint8)
+                    color_mask = np.random.randint(0, 256, (1, 3), dtype=np.uint8)
                     mask = maskUtils.decode(segms[i]).astype(np.bool)
                     img_show[mask] = img_show[mask] * 0.5 + color_mask * 0.5
             # draw bounding boxes
@@ -191,8 +193,5 @@ class BaseDetector(nn.Module, metaclass=ABCMeta):
             ]
             labels = np.concatenate(labels)
             mmcv.imshow_det_bboxes(
-                img_show,
-                bboxes,
-                labels,
-                class_names=class_names,
-                score_thr=score_thr)
+                img_show, bboxes, labels, class_names=class_names, score_thr=score_thr
+            )

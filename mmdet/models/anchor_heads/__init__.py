@@ -13,8 +13,18 @@ from .rpn_head import RPNHead
 from .ssd_head import SSDHead
 
 __all__ = [
-    'AnchorHead', 'GuidedAnchorHead', 'FeatureAdaption', 'RPNHead',
-    'GARPNHead', 'RetinaHead', 'RetinaSepBNHead', 'GARetinaHead', 'SSDHead',
-    'FCOSHead', 'RepPointsHead', 'FoveaHead', 'FreeAnchorRetinaHead',
-    'ATSSHead'
+    "AnchorHead",
+    "GuidedAnchorHead",
+    "FeatureAdaption",
+    "RPNHead",
+    "GARPNHead",
+    "RetinaHead",
+    "RetinaSepBNHead",
+    "GARetinaHead",
+    "SSDHead",
+    "FCOSHead",
+    "RepPointsHead",
+    "FoveaHead",
+    "FreeAnchorRetinaHead",
+    "ATSSHead",
 ]

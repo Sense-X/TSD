@@ -7,8 +7,13 @@ import torch.distributed as dist
 from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
 from mmcv.runner import DistSamplerSeedHook, Runner
 
-from mmdet.core import (DistEvalHook, DistOptimizerHook, EvalHook,
-                        Fp16OptimizerHook, build_optimizer)
+from mmdet.core import (
+    DistEvalHook,
+    DistOptimizerHook,
+    EvalHook,
+    Fp16OptimizerHook,
+    build_optimizer,
+)
 from mmdet.datasets import build_dataloader, build_dataset
 from mmdet.utils import get_root_logger
 
@@ -40,12 +45,11 @@ def parse_losses(losses):
         elif isinstance(loss_value, list):
             log_vars[loss_name] = sum(_loss.mean() for _loss in loss_value)
         else:
-            raise TypeError(
-                '{} is not a tensor or list of tensors'.format(loss_name))
+            raise TypeError("{} is not a tensor or list of tensors".format(loss_name))
 
-    loss = sum(_value for _key, _value in log_vars.items() if 'loss' in _key)
+    loss = sum(_value for _key, _value in log_vars.items() if "loss" in _key)
 
-    log_vars['loss'] = loss
+    log_vars["loss"] = loss
     for loss_name, loss_value in log_vars.items():
         # reduce loss when distributed training
         if dist.is_available() and dist.is_initialized():
@@ -75,19 +79,14 @@ def batch_processor(model, data, train_mode):
     losses = model(**data)
     loss, log_vars = parse_losses(losses)
 
-    outputs = dict(
-        loss=loss, log_vars=log_vars, num_samples=len(data['img'].data))
+    outputs = dict(loss=loss, log_vars=log_vars, num_samples=len(data["img"].data))
 
     return outputs
 
 
-def train_detector(model,
-                   dataset,
-                   cfg,
-                   distributed=False,
-                   validate=False,
-                   timestamp=None,
-                   meta=None):
+def train_detector(
+    model, dataset, cfg, distributed=False, validate=False, timestamp=None, meta=None
+):
     logger = get_root_logger(cfg.log_level)
 
     # prepare data loaders
@@ -100,48 +99,50 @@ def train_detector(model,
             # cfg.gpus will be ignored if distributed
             len(cfg.gpu_ids),
             dist=distributed,
-            seed=cfg.seed) for ds in dataset
+            seed=cfg.seed,
+            class_aware_sampling=cfg.data.get("class_aware_sampling", False),
+            class_sample_path=cfg.data.get("class_sample_path", None),
+        )
+        for ds in dataset
     ]
 
     # put model on gpus
     if distributed:
-        find_unused_parameters = cfg.get('find_unused_parameters', False)
+        find_unused_parameters = cfg.get("find_unused_parameters", False)
         # Sets the `find_unused_parameters` parameter in
         # torch.nn.parallel.DistributedDataParallel
         model = MMDistributedDataParallel(
             model.cuda(),
             device_ids=[torch.cuda.current_device()],
             broadcast_buffers=False,
-            find_unused_parameters=find_unused_parameters)
+            find_unused_parameters=find_unused_parameters,
+        )
     else:
-        model = MMDataParallel(
-            model.cuda(cfg.gpu_ids[0]), device_ids=cfg.gpu_ids)
+        model = MMDataParallel(model.cuda(cfg.gpu_ids[0]), device_ids=cfg.gpu_ids)
 
     # build runner
     optimizer = build_optimizer(model, cfg.optimizer)
     runner = Runner(
-        model,
-        batch_processor,
-        optimizer,
-        cfg.work_dir,
-        logger=logger,
-        meta=meta)
+        model, batch_processor, optimizer, cfg.work_dir, logger=logger, meta=meta
+    )
     # an ugly walkaround to make the .log and .log.json filenames the same
     runner.timestamp = timestamp
 
     # fp16 setting
-    fp16_cfg = cfg.get('fp16', None)
+    fp16_cfg = cfg.get("fp16", None)
     if fp16_cfg is not None:
         optimizer_config = Fp16OptimizerHook(
-            **cfg.optimizer_config, **fp16_cfg, distributed=distributed)
+            **cfg.optimizer_config, **fp16_cfg, distributed=distributed
+        )
     elif distributed:
         optimizer_config = DistOptimizerHook(**cfg.optimizer_config)
     else:
         optimizer_config = cfg.optimizer_config
 
     # register hooks
-    runner.register_training_hooks(cfg.lr_config, optimizer_config,
-                                   cfg.checkpoint_config, cfg.log_config)
+    runner.register_training_hooks(
+        cfg.lr_config, optimizer_config, cfg.checkpoint_config, cfg.log_config
+    )
     if distributed:
         runner.register_hook(DistSamplerSeedHook())
 
@@ -153,8 +154,9 @@ def train_detector(model,
             imgs_per_gpu=1,
             workers_per_gpu=cfg.data.workers_per_gpu,
             dist=distributed,
-            shuffle=False)
-        eval_cfg = cfg.get('evaluation', {})
+            shuffle=False,
+        )
+        eval_cfg = cfg.get("evaluation", {})
         eval_hook = DistEvalHook if distributed else EvalHook
         runner.register_hook(eval_hook(val_dataloader, **eval_cfg))
 
@@ -162,4 +164,10 @@ def train_detector(model,
         runner.resume(cfg.resume_from)
     elif cfg.load_from:
         runner.load_checkpoint(cfg.load_from)
+    else:
+        try:
+            if cfg.pretrain_model:
+                runner.load_checkpoint(cfg.pretrain_model)
+        except:
+            pass
     runner.run(data_loaders, cfg.workflow, cfg.total_epochs)

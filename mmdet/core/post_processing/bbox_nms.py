@@ -3,12 +3,9 @@ import torch
 from mmdet.ops.nms import nms_wrapper
 
 
-def multiclass_nms(multi_bboxes,
-                   multi_scores,
-                   score_thr,
-                   nms_cfg,
-                   max_num=-1,
-                   score_factors=None):
+def multiclass_nms(
+    multi_bboxes, multi_scores, score_thr, nms_cfg, max_num=-1, score_factors=None
+):
     """NMS for multi-class bboxes.
 
     Args:
@@ -45,7 +42,7 @@ def multiclass_nms(multi_bboxes,
 
     if bboxes.numel() == 0:
         bboxes = multi_bboxes.new_zeros((0, 5))
-        labels = multi_bboxes.new_zeros((0, ), dtype=torch.long)
+        labels = multi_bboxes.new_zeros((0,), dtype=torch.long)
         return bboxes, labels
 
     # Modified from https://github.com/pytorch/vision/blob
@@ -58,10 +55,9 @@ def multiclass_nms(multi_bboxes,
     offsets = labels.to(bboxes) * (max_coordinate + 1)
     bboxes_for_nms = bboxes + offsets[:, None]
     nms_cfg_ = nms_cfg.copy()
-    nms_type = nms_cfg_.pop('type', 'nms')
+    nms_type = nms_cfg_.pop("type", "nms")
     nms_op = getattr(nms_wrapper, nms_type)
-    dets, keep = nms_op(
-        torch.cat([bboxes_for_nms, scores[:, None]], 1), **nms_cfg_)
+    dets, keep = nms_op(torch.cat([bboxes_for_nms, scores[:, None]], 1), **nms_cfg_)
     bboxes = bboxes[keep]
     scores = dets[:, -1]  # soft_nms will modify scores
     labels = labels[keep]

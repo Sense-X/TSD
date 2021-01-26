@@ -63,7 +63,7 @@ class AnchorGenerator(object):
         else:
             return yy, xx
 
-    def grid_anchors(self, featmap_size, stride=16, device='cuda'):
+    def grid_anchors(self, featmap_size, stride=16, device="cuda"):
         base_anchors = self.base_anchors.to(device)
 
         feat_h, feat_w = featmap_size
@@ -82,7 +82,7 @@ class AnchorGenerator(object):
         # then (0, 1), (0, 2), ...
         return all_anchors
 
-    def valid_flags(self, featmap_size, valid_size, device='cuda'):
+    def valid_flags(self, featmap_size, valid_size, device="cuda"):
         feat_h, feat_w = featmap_size
         valid_h, valid_w = valid_size
         assert valid_h <= feat_h and valid_w <= feat_w
@@ -92,7 +92,10 @@ class AnchorGenerator(object):
         valid_y[:valid_h] = 1
         valid_xx, valid_yy = self._meshgrid(valid_x, valid_y)
         valid = valid_xx & valid_yy
-        valid = valid[:,
-                      None].expand(valid.size(0),
-                                   self.num_base_anchors).contiguous().view(-1)
+        valid = (
+            valid[:, None]
+            .expand(valid.size(0), self.num_base_anchors)
+            .contiguous()
+            .view(-1)
+        )
         return valid

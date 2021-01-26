@@ -10,17 +10,18 @@ from ..registry import SHARED_HEADS
 
 @SHARED_HEADS.register_module
 class ResLayer(nn.Module):
-
-    def __init__(self,
-                 depth,
-                 stage=3,
-                 stride=2,
-                 dilation=1,
-                 style='pytorch',
-                 norm_cfg=dict(type='BN', requires_grad=True),
-                 norm_eval=True,
-                 with_cp=False,
-                 dcn=None):
+    def __init__(
+        self,
+        depth,
+        stage=3,
+        stride=2,
+        dilation=1,
+        style="pytorch",
+        norm_cfg=dict(type="BN", requires_grad=True),
+        norm_eval=True,
+        with_cp=False,
+        dcn=None,
+    ):
         super(ResLayer, self).__init__()
         self.norm_eval = norm_eval
         self.norm_cfg = norm_cfg
@@ -28,8 +29,8 @@ class ResLayer(nn.Module):
         self.fp16_enabled = False
         block, stage_blocks = ResNet.arch_settings[depth]
         stage_block = stage_blocks[stage]
-        planes = 64 * 2**stage
-        inplanes = 64 * 2**(stage - 1) * block.expansion
+        planes = 64 * 2 ** stage
+        inplanes = 64 * 2 ** (stage - 1) * block.expansion
 
         res_layer = make_res_layer(
             block,
@@ -41,8 +42,9 @@ class ResLayer(nn.Module):
             style=style,
             with_cp=with_cp,
             norm_cfg=self.norm_cfg,
-            dcn=dcn)
-        self.add_module('layer{}'.format(stage + 1), res_layer)
+            dcn=dcn,
+        )
+        self.add_module("layer{}".format(stage + 1), res_layer)
 
     def init_weights(self, pretrained=None):
         if isinstance(pretrained, str):
@@ -55,11 +57,11 @@ class ResLayer(nn.Module):
                 elif isinstance(m, nn.BatchNorm2d):
                     constant_init(m, 1)
         else:
-            raise TypeError('pretrained must be a str or None')
+            raise TypeError("pretrained must be a str or None")
 
     @auto_fp16()
     def forward(self, x):
-        res_layer = getattr(self, 'layer{}'.format(self.stage + 1))
+        res_layer = getattr(self, "layer{}".format(self.stage + 1))
         out = res_layer(x)
         return out
 

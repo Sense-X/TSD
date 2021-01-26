@@ -18,8 +18,7 @@ class PixelShufflePack(nn.Module):
         upsampled feature map
     """
 
-    def __init__(self, in_channels, out_channels, scale_factor,
-                 upsample_kernel):
+    def __init__(self, in_channels, out_channels, scale_factor, upsample_kernel):
         super(PixelShufflePack, self).__init__()
         self.in_channels = in_channels
         self.out_channels = out_channels
@@ -29,11 +28,12 @@ class PixelShufflePack(nn.Module):
             self.in_channels,
             self.out_channels * scale_factor * scale_factor,
             self.upsample_kernel,
-            padding=(self.upsample_kernel - 1) // 2)
+            padding=(self.upsample_kernel - 1) // 2,
+        )
         self.init_weights()
 
     def init_weights(self):
-        xavier_init(self.upsample_conv, distribution='uniform')
+        xavier_init(self.upsample_conv, distribution="uniform")
 
     def forward(self, x):
         x = self.upsample_conv(x)
@@ -43,11 +43,11 @@ class PixelShufflePack(nn.Module):
 
 upsample_cfg = {
     # layer_abbreviation: module
-    'nearest': nn.Upsample,
-    'bilinear': nn.Upsample,
-    'deconv': nn.ConvTranspose2d,
-    'pixel_shuffle': PixelShufflePack,
-    'carafe': CARAFEPack
+    "nearest": nn.Upsample,
+    "bilinear": nn.Upsample,
+    "deconv": nn.ConvTranspose2d,
+    "pixel_shuffle": PixelShufflePack,
+    "carafe": CARAFEPack,
 }
 
 
@@ -63,12 +63,12 @@ def build_upsample_layer(cfg):
     Returns:
         layer (nn.Module): Created upsample layer
     """
-    assert isinstance(cfg, dict) and 'type' in cfg
+    assert isinstance(cfg, dict) and "type" in cfg
     cfg_ = cfg.copy()
 
-    layer_type = cfg_.pop('type')
+    layer_type = cfg_.pop("type")
     if layer_type not in upsample_cfg:
-        raise KeyError('Unrecognized upsample type {}'.format(layer_type))
+        raise KeyError("Unrecognized upsample type {}".format(layer_type))
     else:
         upsample = upsample_cfg[layer_type]
         if upsample is None:

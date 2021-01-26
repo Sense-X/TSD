@@ -13,16 +13,12 @@ class RepPointsDetector(SingleStageDetector):
         - RepPoints detector (https://arxiv.org/pdf/1904.11490)
     """
 
-    def __init__(self,
-                 backbone,
-                 neck,
-                 bbox_head,
-                 train_cfg=None,
-                 test_cfg=None,
-                 pretrained=None):
-        super(RepPointsDetector,
-              self).__init__(backbone, neck, bbox_head, train_cfg, test_cfg,
-                             pretrained)
+    def __init__(
+        self, backbone, neck, bbox_head, train_cfg=None, test_cfg=None, pretrained=None
+    ):
+        super(RepPointsDetector, self).__init__(
+            backbone, neck, bbox_head, train_cfg, test_cfg, pretrained
+        )
 
     def merge_aug_results(self, aug_bboxes, aug_scores, img_metas):
         """Merge augmented detection bboxes and scores.
@@ -37,9 +33,9 @@ class RepPointsDetector(SingleStageDetector):
         """
         recovered_bboxes = []
         for bboxes, img_info in zip(aug_bboxes, img_metas):
-            img_shape = img_info[0]['img_shape']
-            scale_factor = img_info[0]['scale_factor']
-            flip = img_info[0]['flip']
+            img_shape = img_info[0]["img_shape"]
+            scale_factor = img_info[0]["scale_factor"]
+            flip = img_info[0]["flip"]
             bboxes = bbox_mapping_back(bboxes, img_shape, scale_factor, flip)
             recovered_bboxes.append(bboxes)
         bboxes = torch.cat(recovered_bboxes, dim=0)
@@ -65,17 +61,20 @@ class RepPointsDetector(SingleStageDetector):
 
         # after merging, bboxes will be rescaled to the original image size
         merged_bboxes, merged_scores = self.merge_aug_results(
-            aug_bboxes, aug_scores, img_metas)
-        det_bboxes, det_labels = multiclass_nms(merged_bboxes, merged_scores,
-                                                self.test_cfg.score_thr,
-                                                self.test_cfg.nms,
-                                                self.test_cfg.max_per_img)
+            aug_bboxes, aug_scores, img_metas
+        )
+        det_bboxes, det_labels = multiclass_nms(
+            merged_bboxes,
+            merged_scores,
+            self.test_cfg.score_thr,
+            self.test_cfg.nms,
+            self.test_cfg.max_per_img,
+        )
 
         if rescale:
             _det_bboxes = det_bboxes
         else:
             _det_bboxes = det_bboxes.clone()
-            _det_bboxes[:, :4] *= img_metas[0][0]['scale_factor']
-        bbox_results = bbox2result(_det_bboxes, det_labels,
-                                   self.bbox_head.num_classes)
+            _det_bboxes[:, :4] *= img_metas[0][0]["scale_factor"]
+        bbox_results = bbox2result(_det_bboxes, det_labels, self.bbox_head.num_classes)
         return bbox_results
