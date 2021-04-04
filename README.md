@@ -42,7 +42,7 @@ The corresponding configuration can be found in (faster_rcnn_r50_fpn_TSD_1x.py, 
 
 We add supports for both coco dataset and openimages dataset. Datasets should be organized as following.
 
-Files in `./TSD/data/OpenImages/challenge2019` can be downloaded from [here](https://drive.google.com/file/d/1-CnE3akagnoyDarrDuKTl7OF9vwF_rA3/view?usp=sharing).
+Files in `./TSD/data/OpenImages/challenge2019` can be downloaded from [here](https://drive.google.com/file/d/1-CnE3akagnoyDarrDuKTl7OF9vwF_rA3/view?usp=sharing) or [Dropbox](https://www.dropbox.com/s/41bs8o101v5v4m0/challenge2019.zip?dl=0).
 
 ```bash
 TSD/data
